@@ -5,7 +5,8 @@
     "organization_id": "ORG-ABC",
     "drone_id": "DRONE-XYZ-001",
     "requested_entry_time": "2026-02-02T10:00:00Z",
-    "request_type": "ZONE"
+    "request_type": "ZONE",
+    "payload": "7.0"
   },
   {
     "sade_zone_id": "ZONE-002",
@@ -14,6 +15,7 @@
     "drone_id": "DRONE-XYZ-001",
     "requested_entry_time": "2026-02-02T14:30:00Z",
     "request_type": "REGION",
+    "payload": "14.5",
     "request_payload": {
       "polygon": "ZONE_CEILING",
       "ceiling": "GROUND"
@@ -26,6 +28,7 @@
     "drone_id": "DRONE-XYZ-001",
     "requested_entry_time": "2026-02-02T16:00:00Z",
     "request_type": "REGION",
+    "payload": "17.0",
     "request_payload": {
       "polygon": [],
       "ceiling": 300,
@@ -39,6 +42,7 @@
     "drone_id": "DRONE-XYZ-001",
     "requested_entry_time": "2026-02-02T18:00:00Z",
     "request_type": "ROUTE",
+    "payload": "2.0",
     "request_payload": {
       "waypoints": [
         {"lat": 37.7749, "lon": -122.4194, "altitude": 100},
@@ -55,6 +59,7 @@
     "drone_id": "DRONE-XYZ-001",
     "requested_entry_time": "2026-02-03T09:00:00Z",
     "request_type": "ROUTE",
+    "payload": "2.0",
     "request_payload": {
       "waypoints": [
         {"lat": 40.7128, "lon": -74.0060, "altitude": 150},

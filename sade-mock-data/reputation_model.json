@@ -4,7 +4,7 @@
     "session_id": "550e8400-e29b-41d4-a716-446655440000",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-001",
     "wind_steady_kt": "02",
     "wind_gusts_kt": "05",
@@ -19,7 +19,7 @@
       "distance_flown_mi": 1.8
     },
     "payload": {
-      "total_weight_kg": 1.2,
+      "total_weight_kg": 2.5,
       "camera": "01",
       "other": "000"
     },
@@ -43,7 +43,7 @@
     "session_id": "660e8400-e29b-41d4-a716-446655440001",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-002",
     "wind_steady_kt": "05",
     "wind_gusts_kt": "08",
@@ -58,7 +58,7 @@
       "distance_flown_mi": 2.5
     },
     "payload": {
-      "total_weight_kg": 1.5,
+      "total_weight_kg": 5.2,
       "camera": "11",
       "other": "000"
     },
@@ -82,10 +82,10 @@
     "session_id": "880e8400-e29b-41d4-a716-446655440003",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-004",
     "wind_steady_kt": "12",
-    "wind_gusts_kt": "18",
+    "wind_gusts_kt": "11",
     "precipitation": "000",
     "visibility_nm": "06",
     "max_temperature_f": 75,
@@ -97,7 +97,7 @@
       "distance_flown_mi": 3.2
     },
     "payload": {
-      "total_weight_kg": 1.8,
+      "total_weight_kg": 8.1,
       "camera": "10",
       "other": "000"
     },
@@ -121,10 +121,10 @@
     "session_id": "990e8400-e29b-41d4-a716-446655440004",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-005",
     "wind_steady_kt": "15",
-    "wind_gusts_kt": "22",
+    "wind_gusts_kt": "12",
     "precipitation": "000",
     "visibility_nm": "05",
     "max_temperature_f": 70,
@@ -136,7 +136,7 @@
       "distance_flown_mi": 2.1
     },
     "payload": {
-      "total_weight_kg": 1.3,
+      "total_weight_kg": 11.2,
       "camera": "01",
       "other": "000"
     },
@@ -160,10 +160,10 @@
     "session_id": "aa0e8400-e29b-41d4-a716-446655440005",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-001",
-    "wind_steady_kt": "18",
-    "wind_gusts_kt": "25",
+    "wind_steady_kt": "11",
+    "wind_gusts_kt": "15",
     "precipitation": "000",
     "visibility_nm": "04",
     "max_temperature_f": 68,
@@ -175,7 +175,7 @@
       "distance_flown_mi": 1.5
     },
     "payload": {
-      "total_weight_kg": 1.1,
+      "total_weight_kg": 0.5,
       "camera": "01",
       "other": "000"
     },
@@ -199,10 +199,10 @@
     "session_id": "bb0e8400-e29b-41d4-a716-446655440006",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-002",
-    "wind_steady_kt": "20",
-    "wind_gusts_kt": "28",
+    "wind_steady_kt": "12",
+    "wind_gusts_kt": "7",
     "precipitation": "000",
     "visibility_nm": "03",
     "max_temperature_f": 65,
@@ -214,7 +214,7 @@
       "distance_flown_mi": 0.9
     },
     "payload": {
-      "total_weight_kg": 0.8,
+      "total_weight_kg": 14.0,
       "camera": "00",
       "other": "000"
     },
@@ -238,10 +238,10 @@
     "session_id": "cc0e8400-e29b-41d4-a716-446655440007",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-003",
-    "wind_steady_kt": "22",
-    "wind_gusts_kt": "30",
+    "wind_steady_kt": "8",
+    "wind_gusts_kt": "12",
     "precipitation": "000",
     "visibility_nm": "02",
     "max_temperature_f": 64,
@@ -253,7 +253,7 @@
       "distance_flown_mi": 2.8
     },
     "payload": {
-      "total_weight_kg": 1.6,
+      "total_weight_kg": 6.4,
       "camera": "11",
       "other": "000"
     },
@@ -277,10 +277,10 @@
     "session_id": "dd0e8400-e29b-41d4-a716-446655440008",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-004",
-    "wind_steady_kt": "25",
-    "wind_gusts_kt": "35",
+    "wind_steady_kt": "12",
+    "wind_gusts_kt": "7",
     "precipitation": "000",
     "visibility_nm": "01",
     "max_temperature_f": 62,
@@ -292,7 +292,7 @@
       "distance_flown_mi": 1.0
     },
     "payload": {
-      "total_weight_kg": 1.0,
+      "total_weight_kg": 3.2,
       "camera": "01",
       "other": "000"
     },
@@ -316,10 +316,10 @@
     "session_id": "550e8400-e29b-41d4-a716-446655440015",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-001",
-    "wind_steady_kt": "19",
-    "wind_gusts_kt": "27",
+    "wind_steady_kt": "9",
+    "wind_gusts_kt": "10",
     "precipitation": "000",
     "visibility_nm": "05",
     "max_temperature_f": 67,
@@ -331,7 +331,7 @@
       "distance_flown_mi": 1.1
     },
     "payload": {
-      "total_weight_kg": 0.9,
+      "total_weight_kg": 1.0,
       "camera": "00",
       "other": "000"
     },
@@ -355,10 +355,10 @@
     "session_id": "660e8400-e29b-41d4-a716-446655440016",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-003",
-    "wind_steady_kt": "28",
-    "wind_gusts_kt": "38",
+    "wind_steady_kt": "8",
+    "wind_gusts_kt": "12",
     "precipitation": "000",
     "visibility_nm": "02",
     "max_temperature_f": 61,
@@ -370,7 +370,7 @@
       "distance_flown_mi": 0.4
     },
     "payload": {
-      "total_weight_kg": 0.7,
+      "total_weight_kg": 15.5,
       "camera": "00",
       "other": "000"
     },
@@ -394,7 +394,7 @@
     "session_id": "770e8400-e29b-41d4-a716-446655440017",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-005",
     "wind_steady_kt": "04",
     "wind_gusts_kt": "07",
@@ -409,7 +409,7 @@
       "distance_flown_mi": 2.6
     },
     "payload": {
-      "total_weight_kg": 1.4,
+      "total_weight_kg": 4.0,
       "camera": "10",
       "other": "000"
     },
@@ -433,7 +433,7 @@
     "session_id": "880e8400-e29b-41d4-a716-446655440018",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-002",
     "wind_steady_kt": "09",
     "wind_gusts_kt": "13",
@@ -448,7 +448,7 @@
       "distance_flown_mi": 2.3
     },
     "payload": {
-      "total_weight_kg": 1.3,
+      "total_weight_kg": 9.3,
       "camera": "01",
       "other": "000"
     },
@@ -472,10 +472,10 @@
     "session_id": "990e8400-e29b-41d4-a716-446655440019",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-004",
     "wind_steady_kt": "13",
-    "wind_gusts_kt": "19",
+    "wind_gusts_kt": "11",
     "precipitation": "000",
     "visibility_nm": "07",
     "max_temperature_f": 73,
@@ -487,7 +487,7 @@
       "distance_flown_mi": 1.9
     },
     "payload": {
-      "total_weight_kg": 1.2,
+      "total_weight_kg": 7.2,
       "camera": "11",
       "other": "000"
     },
@@ -511,10 +511,10 @@
     "session_id": "aa0e8400-e29b-41d4-a716-446655440020",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-001",
-    "wind_steady_kt": "16",
-    "wind_gusts_kt": "23",
+    "wind_steady_kt": "10",
+    "wind_gusts_kt": "11",
     "precipitation": "000",
     "visibility_nm": "06",
     "max_temperature_f": 69,
@@ -526,7 +526,7 @@
       "distance_flown_mi": 1.6
     },
     "payload": {
-      "total_weight_kg": 1.1,
+      "total_weight_kg": 12.1,
       "camera": "01",
       "other": "000"
     },
@@ -550,7 +550,7 @@
     "session_id": "bb0e8400-e29b-41d4-a716-446655440021",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-003",
     "wind_steady_kt": "03",
     "wind_gusts_kt": "06",
@@ -565,7 +565,7 @@
       "distance_flown_mi": 2.9
     },
     "payload": {
-      "total_weight_kg": 1.5,
+      "total_weight_kg": 13.5,
       "camera": "10",
       "other": "000"
     },
@@ -589,7 +589,7 @@
     "session_id": "cc0e8400-e29b-41d4-a716-446655440022",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-005",
     "wind_steady_kt": "07",
     "wind_gusts_kt": "12",
@@ -604,7 +604,7 @@
       "distance_flown_mi": 2.2
     },
     "payload": {
-      "total_weight_kg": 1.2,
+      "total_weight_kg": 10.2,
       "camera": "01",
       "other": "000"
     },
@@ -628,10 +628,10 @@
     "session_id": "dd0e8400-e29b-41d4-a716-446655440023",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-002",
     "wind_steady_kt": "11",
-    "wind_gusts_kt": "17",
+    "wind_gusts_kt": "7",
     "precipitation": "000",
     "visibility_nm": "08",
     "max_temperature_f": 74,
@@ -643,7 +643,7 @@
       "distance_flown_mi": 2.0
     },
     "payload": {
-      "total_weight_kg": 1.3,
+      "total_weight_kg": 0.3,
       "camera": "11",
       "other": "000"
     },
@@ -667,10 +667,10 @@
     "session_id": "ee0e8400-e29b-41d4-a716-446655440024",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-004",
-    "wind_steady_kt": "14",
-    "wind_gusts_kt": "21",
+    "wind_steady_kt": "4",
+    "wind_gusts_kt": "1",
     "precipitation": "000",
     "visibility_nm": "07",
     "max_temperature_f": 71,
@@ -682,7 +682,7 @@
       "distance_flown_mi": 1.7
     },
     "payload": {
-      "total_weight_kg": 1.0,
+      "total_weight_kg": 16.0,
       "camera": "00",
       "other": "000"
     },
@@ -706,7 +706,7 @@
     "session_id": "ff0e8400-e29b-41d4-a716-446655440025",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-001",
     "wind_steady_kt": "06",
     "wind_gusts_kt": "10",
@@ -721,7 +721,7 @@
       "distance_flown_mi": 2.5
     },
     "payload": {
-      "total_weight_kg": 1.4,
+      "total_weight_kg": 4.8,
       "camera": "10",
       "other": "000"
     },
@@ -745,10 +745,10 @@
     "session_id": "110e8400-e29b-41d4-a716-446655440026",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-003",
     "wind_steady_kt": "10",
-    "wind_gusts_kt": "15",
+    "wind_gusts_kt": "11",
     "precipitation": "000",
     "visibility_nm": "09",
     "max_temperature_f": 75,
@@ -760,7 +760,7 @@
       "distance_flown_mi": 2.1
     },
     "payload": {
-      "total_weight_kg": 1.2,
+      "total_weight_kg": 2.2,
       "camera": "01",
       "other": "000"
     },
@@ -784,7 +784,7 @@
     "session_id": "220e8400-e29b-41d4-a716-446655440027",
     "record_type": "001",
     "pilot_id": "PILOT-12345",
-    "uav_id": "DRONE-XYZ-001",
+    "drone_id": "DRONE-XYZ-001",
     "zone_id": "ZONE-005",
     "wind_steady_kt": "08",
     "wind_gusts_kt": "14",
@@ -799,7 +799,7 @@
       "distance_flown_mi": 2.4
     },
     "payload": {
-      "total_weight_kg": 1.3,
+      "total_weight_kg": 9.8,
       "camera": "11",
       "other": "000"
     },

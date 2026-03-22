@@ -30,8 +30,8 @@ def _load_user_claims(drone_id: str) -> List[Dict[str, Any]]:
     raw = json.loads(_USER_INPUT_PATH.read_text())
     if not isinstance(raw, list):
         return []
-    # Filter by drone (field is "drones" in the JSON)
-    records = [r for r in raw if r.get("drones") == drone_id]
+    # Filter by drone (field is "drone_id" in the JSON)
+    records = [r for r in raw if r.get("drone_id") == drone_id]
     # Sort by date (MM/DD/YYYY)
     def parse_date(r: Dict[str, Any]) -> datetime:
         s = r.get("date", "")
@@ -154,6 +154,11 @@ def _retrieve_claims_impl(
             why_list.append(f"action '{action}' checked (mock)")
 
     satisfied = len(unsatisfied_actions) == 0
+    recommendation_prose = (
+        "All required actions satisfied." if satisfied
+        else f"Unsatisfied: {unsatisfied_actions}; resolved prefixes: {resolved_prefixes}."
+    )
+    why_prose = "; ".join(why_list[:10])
 
     return ClaimsAgentOutput(
         satisfied=satisfied,
@@ -161,6 +166,8 @@ def _retrieve_claims_impl(
         unresolved_incident_prefixes=unresolved_prefixes,
         satisfied_actions=satisfied_actions,
         unsatisfied_actions=unsatisfied_actions,
+        recommendation_prose=recommendation_prose,
+        why_prose=why_prose,
         why=why_list[:10],
     )
 

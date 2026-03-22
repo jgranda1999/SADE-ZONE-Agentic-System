@@ -1,0 +1,156 @@
+======================================================================
+FINAL DECISION
+======================================================================
+Type: APPROVED
+SADE Message: APPROVED
+Explanation: Approved: Based on the Environment Agent, current wind is steady 10.2 kt with gusts 12.0 kt (LOW wind risk). Based on the Reputation Agent, demonstrated wind envelope is steady 15.0 kt and gust 15.0 kt (current winds are within envelope), but a high-severity incident family (0011) was present historically. Based on the Claims Agent, the required action RESOLVE_HIGH_SEVERITY_INCIDENTS is satisfied and there are no unresolved high-severity prefixes remaining; therefore entry is approved.
+======================================================================
+
+Full output (decision + visibility):
+{
+  "decision": {
+    "type": "APPROVED",
+    "sade_message": "APPROVED",
+    "constraints": [],
+    "action_id": null,
+    "actions": [],
+    "denial_code": null,
+    "explanation": "Approved: Based on the Environment Agent, current wind is steady 10.2 kt with gusts 12.0 kt (LOW wind risk). Based on the Reputation Agent, demonstrated wind envelope is steady 15.0 kt and gust 15.0 kt (current winds are within envelope), but a high-severity incident family (0011) was present historically. Based on the Claims Agent, the required action RESOLVE_HIGH_SEVERITY_INCIDENTS is satisfied and there are no unresolved high-severity prefixes remaining; therefore entry is approved."
+  },
+  "visibility": {
+    "entry_request": {
+      "sade_zone_id": "ZONE-001",
+      "pilot_id": "PILOT-12345",
+      "organization_id": "ORG-ABC",
+      "drone_id": "DRONE-XYZ-001",
+      "requested_entry_time": "2026-02-02T10:00:00Z",
+      "request_type": "ZONE"
+    },
+    "environment_agent": {
+      "raw_conditions": {
+        "wind": 10.2,
+        "wind_gust": 12.0,
+        "precipitation": "none",
+        "visibility": 6.0,
+        "light_conditions": "daylight",
+        "spatial_constraints": {
+          "airspace_class": "Class E",
+          "no_fly_zones": [],
+          "restricted_areas": []
+        }
+      },
+      "risk_assessment": {
+        "risk_level": "LOW",
+        "blocking_factors": [],
+        "marginal_factors": []
+      },
+      "constraint_suggestions": [],
+      "recommendation_prose": "Wind risk signal: LOW. Steady wind 10.2 kt, gusts 12.0 kt.",
+      "recommendation": "LOW",
+      "why_prose": "wind_steady_kt=10.2; wind_gust_kt=12.0; risk_level=LOW",
+      "why": [
+        "wind_steady_kt=10.2",
+        "wind_gust_kt=12.0",
+        "risk_level=LOW"
+      ]
+    },
+    "reputation_agent": {
+      "incident_analysis": {
+        "incidents": [
+          {
+            "incident_code": "0101-100",
+            "incident_category": "Airspace Violations",
+            "incident_subcategory": "Night Operations Without Proper Lighting",
+            "severity": "MEDIUM",
+            "resolved": false,
+            "session_id": "880e8400-e29b-41d4-a716-446655440003",
+            "date": "2025-01-12T18:00:00Z"
+          },
+          {
+            "incident_code": "0011-010",
+            "incident_category": "Mid-Air Collisions / Near-Misses",
+            "incident_subcategory": "Near Mid-Air Collision (NMAC)",
+            "severity": "HIGH",
+            "resolved": false,
+            "session_id": "aa0e8400-e29b-41d4-a716-446655440005",
+            "date": "2025-03-14T11:00:00Z"
+          },
+          {
+            "incident_code": "0100-100",
+            "incident_category": "Loss of Control / Malfunctions",
+            "incident_subcategory": "Communication Loss (C2 Link)",
+            "severity": "MEDIUM",
+            "resolved": false,
+            "session_id": "cc0e8400-e29b-41d4-a716-446655440007",
+            "date": "2025-05-07T15:30:00Z"
+          },
+          {
+            "incident_code": "0100-001",
+            "incident_category": "Loss of Control / Malfunctions",
+            "incident_subcategory": "GPS or Navigation Failure",
+            "severity": "MEDIUM",
+            "resolved": false,
+            "session_id": "550e8400-e29b-41d4-a716-446655440015",
+            "date": "2026-01-18T14:15:00Z"
+          }
+        ],
+        "unresolved_incidents_present": true,
+        "total_incidents": 4,
+        "recent_incidents_count": 1
+      },
+      "risk_assessment": {
+        "risk_level": "HIGH",
+        "blocking_factors": [
+          "unresolved_high_severity_incident"
+        ],
+        "confidence_factors": []
+      },
+      "drp_sessions_count": 21,
+      "demo_steady_max_kt": 15.0,
+      "demo_gust_max_kt": 15.0,
+      "incident_codes": [
+        "0101-100",
+        "0011-010",
+        "0011-010",
+        "0100-100",
+        "0101-100",
+        "0100-001"
+      ],
+      "n_0100_0101": 4,
+      "recommendation_prose": "Historical risk signal: HIGH. Sessions=21, demo wind envelope steady=15.0 kt gust=15.0 kt; n_0100_0101=4, unresolved_incidents_present=True.",
+      "recommendation": "HIGH",
+      "why_prose": "drp_sessions_count=21; demo_steady_max_kt=15.0; demo_gust_max_kt=15.0; n_0100_0101=4; unresolved_incidents_present=True; incident_prefixes_present=['0101', '0011', '0100']",
+      "why": [
+        "drp_sessions_count=21",
+        "demo_steady_max_kt=15.0",
+        "demo_gust_max_kt=15.0",
+        "n_0100_0101=4",
+        "unresolved_incidents_present=True",
+        "incident_prefixes_present=['0101', '0011', '0100']"
+      ]
+    },
+    "claims_agent": {
+      "called": true,
+      "satisfied": true,
+      "resolved_incident_prefixes": [
+        "0100",
+        "0011",
+        "0101"
+      ],
+      "unresolved_incident_prefixes": [],
+      "satisfied_actions": [
+        "RESOLVE_HIGH_SEVERITY_INCIDENTS"
+      ],
+      "unsatisfied_actions": [],
+      "recommendation_prose": "Verification indicates the required action RESOLVE_HIGH_SEVERITY_INCIDENTS is satisfied; high-severity incidents with prefix 0011 have verified follow-up/mitigation on record and there are no unresolved high-severity prefixes remaining.",
+      "why_prose": "A verified follow-up was found for the high-severity incident prefix(es) ['0011'] in the available claims records; no outstanding high-severity incident prefixes were identified as unresolved.",
+      "why": [
+        "verified follow-up for high-severity prefix(es) ['0011'] (from sade-mock-data)"
+      ]
+    },
+    "rule_trace": [
+      "STATE_3_RULE_HIGH_SEV_INCIDENT",
+      "STATE_5_RULE_CLAIMS_SATISFIED_REAPPLY_WIND_ENVELOPE_APPROVED"
+    ]
+  }
+}

@@ -24,8 +24,8 @@ The system uses a multi-agent architecture with a single decision authority:
 
 #### Environment Agent
 - **Purpose**: Retrieve external operating conditions
-- **Data**: Weather (wind, gusts, precipitation, visibility), light conditions, airspace/spatial constraints
-- **Tool**: `retrieveEnvironment`
+- **Data**: Weather (wind, gusts, precipitation, visibility), light conditions, airspace/spatial constraints, manufacturer flight constraints (MFC)
+- **Tools**: `retrieveEnvironment`, `retrieveMFC`
 
 #### Reputation Agent
 - **Purpose**: Retrieve historical trust and reliability signals
@@ -101,22 +101,24 @@ cd agentic-sade-dev
 pip install -r requirements.txt
 ```
 
-Note: The project uses the `agents` framework (from Anthropic). Ensure you have the necessary API keys configured.
+Note: The project uses the **OpenAI Agents SDK** (`openai-agents`), which provides the `agents` module (`Agent`, `Runner`, `trace`).
 
 ### API Configuration
 
-The system uses OpenAI models via the `agents` framework. Configure the model using the `OPENAI_MODEL` environment variable:
+The system uses OpenAI models via the Agents SDK. At minimum, you must configure your OpenAI API key:
 
 ```bash
-export OPENAI_MODEL=gpt-4.1  # or gpt-5.2, gpt-4o, etc.
+export OPENAI_API_KEY=sk-...
 ```
+
+You can further customize model selection and other settings following the OpenAI Agents SDK documentation.
 
 ### Rate Limiting
 
 When processing multiple requests in batch, the system includes a configurable delay between requests to avoid hitting API rate limits. The default delay is set to 60 seconds in `main.py`. To adjust this delay, modify the `asyncio.sleep()` value in the `main()` function:
 
 ```python
-# In main.py, line ~285
+# In main.py
 await asyncio.sleep(60.0)  # Adjust delay as needed
 ```
 
@@ -163,7 +165,25 @@ if __name__ == "__main__":
 python main.py
 ```
 
-The script processes all entry requests from `sade-mock-data/entry_requests.json` sequentially, with a 60-second delay between each request to avoid rate limits. Results are written to the `results/` directory as `entry_result_{ZONE_ID}.txt`.
+By default, the script reads `sade-mock-data/entry_requests.json`, processes the first entry request, and writes a result file into one of the scenario-specific subdirectories under `results/` (for example, `results/mfc-payload/mfc-payload-bad/entry_result_{ZONE_ID}.txt`). You can modify the loop in `main()` to process additional requests or change which scenario directory is used.
+
+### GUI Visualizer
+
+This repository includes a PyQt5 GUI for visualizing orchestrator decisions and sub-agent visibility.
+
+- **Launch without a file** (empty state):
+  ```bash
+  python gui.py
+  ```
+- **Launch with a specific result file**:
+  ```bash
+  python gui.py results/mfc-payload/mfc-payload-bad/entry_result_ZONE-001.txt
+  ```
+
+The GUI also exposes presets for the bundled demo scenarios:
+
+- `Weather · Wind Good` / `Medium` / `Bad`
+- `MFC/Payload · Good` / `Medium` / `Bad`
 
 ## Decision Flow
 
@@ -181,36 +201,46 @@ The Orchestrator follows a mandatory state machine:
 7. **Re-evaluation**: Evaluate attestation satisfaction and claims verification results
 8. **Final Decision**: Emit final decision
 
-The v2 orchestrator runs in a single pass (no outer loop) and must emit a final decision within the maximum turn limit (default 25 turns).
+The orchestrator runs in a single pass (no outer loop) and must emit a final decision within the maximum turn limit (default 25 turns, see `DEFAULT_MAX_TURNS` in `main.py`).
 
 ## Project Structure
 
 ```
 agentic-sade-dev/
-├── main.py                    # Entry point and orchestration logic
-├── models.py                  # Pydantic models for agent outputs
+├── main.py                        # CLI entry point and orchestration logic
+├── gui.py                         # PyQt5 GUI for visualizing decisions
+├── models.py                      # Pydantic models for agent outputs and evidence grammar
 ├── tools/
-│   ├── environment_tools.py   # Environment agent tool implementation
-│   ├── reputation_tools.py    # Reputation agent tool implementation
-│   ├── claims_tools.py        # Claims agent tool implementation
-│   └── action_required_tools.py  # SafeCert interface tool
-├── v2_prompts/                # Version 2 agent prompts (current)
-│   ├── orchestrator_prompt.md      # Orchestrator agent instructions
-│   ├── env_agent_prompt.md         # Environment agent instructions
-│   ├── rm_agent_prompt.md          # Reputation agent instructions
-│   └── claims_agent_prompt.md      # Claims agent instructions
-├── prompts/                   # Legacy prompts (v1)
+│   ├── environment_tools.py       # Environment agent tools (weather, MFC, spatial constraints)
+│   ├── reputation_tools.py        # Reputation agent tools
+│   ├── claims_tools.py            # Claims agent tools
+│   └── action_required_tools.py   # SafeCert interface tools (mock implementation)
+├── v4_prompts/                    # Current agent prompts (orchestrator + sub‑agents)
 │   ├── orchestrator_prompt.md
-│   ├── environment_agent_prompt.md
-│   ├── reputation_agent_prompt.md
-│   └── action_required_agent_prompt.md
-├── sade-mock-data/            # Mock data for testing
-│   └── entry_requests.json    # Example entry requests
-├── results/                   # Output directory for decision results
-│   └── entry_result_*.txt     # Decision output files
+│   ├── env_agent_prompt.md
+│   ├── rm_agent_prompt.md
+│   └── claims_agent_prompt.md
+├── v3_prompts/                    # Prior prompt iteration (kept for comparison)
+├── v2_prompts/                    # Earlier prompt iteration (kept for comparison)
+├── v1_prompts/                    # Legacy prompts (original design)
+├── sade-mock-data/                # Mock data for testing
+│   ├── entry_requests.json        # Example entry requests
+│   ├── reputation_model.json      # Sample reputation model data
+│   └── user_input.json            # Sample user input / claims data
+├── results/                       # Output directory for decision results
+│   ├── weather/
+│   │   ├── wind-visibility-good/
+│   │   ├── wind-visibility-medium/
+│   │   └── wind-visibility-bad/
+│   └── mfc-payload/
+│       ├── mfc-payload-good/
+│       ├── mfc-payload-medium/
+│       └── mfc-payload-bad/
 ├── other/
-│   └── project_overview.md    # Detailed architecture documentation
-└── README.md                  # This file
+│   └── project_overview.md        # Detailed architecture and policy documentation
+├── to-dos.md                      # Development notes and follow-up tasks
+├── requirements.txt               # Python dependencies (OpenAI Agents SDK, etc.)
+└── README.md                      # This file
 ```
 
 ## Development Notes
@@ -277,6 +307,6 @@ This is a safety-critical system. All changes must:
 ## References
 
 - See `other/project_overview.md` for detailed architecture documentation
-- See `v2_prompts/orchestrator_prompt.md` for complete Orchestrator decision logic (v2)
+- See `v4_prompts/orchestrator_prompt.md` for the current Orchestrator decision logic
 - See `models.py` for complete data model specifications
-- See `v2_prompts/` directory for all current agent prompts
+- See `v4_prompts/` directory for all current agent prompts (and `v1_prompts/`–`v3_prompts/` for historical versions)

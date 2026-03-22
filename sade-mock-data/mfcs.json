@@ -1,0 +1,125 @@
+[
+    {
+      "drone_id": "DRONE-XYZ-001",
+      "manufacturer": "Freefly Systems",
+      "model": "ALTA X",
+      "category": "heavy-lift",
+      "constraints": {
+        "max_gross_takeoff_weight_kg": 34.9
+      },
+      "payload_max_kg": 15.9,
+      "max_wind_kt": 19.4
+    },
+    {
+      "drone_id": "DRONE-XYZ-002",
+      "manufacturer": "DJI",
+      "model": "Mini 4 Pro",
+      "category": "consumer",
+      "constraints": {
+        "max_wind_resistance_kt": 20.8,
+        "operating_temp_min_c": -10,
+        "operating_temp_max_c": 40
+      },
+      "payload_max_kg": null,
+      "max_wind_kt": 20.8
+    },
+    {
+      "drone_id": "DRONE-XYZ-003",
+      "manufacturer": "DJI",
+      "model": "Air 3",
+      "category": "consumer",
+      "constraints": {
+        "max_wind_resistance_kt": 23.3,
+        "operating_temp_min_c": -10,
+        "operating_temp_max_c": 40
+      },
+      "payload_max_kg": null,
+      "max_wind_kt": 23.3
+    },
+    {
+      "drone_id": "DRONE-XYZ-004",
+      "manufacturer": "DJI",
+      "model": "Mavic 3 Enterprise (M3E Series)",
+      "category": "enterprise",
+      "constraints": {
+        "max_wind_resistance_kt": 23.3,
+        "max_takeoff_altitude_m": 6000,
+        "operating_temp_min_c": null,
+        "operating_temp_max_c": null
+      },
+      "payload_max_kg": null,
+      "max_wind_kt": 23.3
+    },
+    {
+      "drone_id": "DRONE-XYZ-005",
+      "manufacturer": "DJI",
+      "model": "Matrice 350 RTK",
+      "category": "enterprise",
+      "constraints": {
+        "max_wind_resistance_kt": 23.3,
+        "operating_temp_min_c": -20,
+        "operating_temp_max_c": 50,
+        "max_flight_altitude_m": 7000
+      },
+      "payload_max_kg": 2.7,
+      "max_wind_kt": 23.3
+    },
+    {
+      "drone_id": "DRONE-XYZ-006",
+      "manufacturer": "Autel Robotics",
+      "model": "EVO II Pro V3",
+      "category": "consumer/prosumer",
+      "constraints": {
+        "max_wind_resistance_takeoff_landing_kt": 20.8,
+        "max_wind_resistance_cruise_kt": 23.3,
+        "operating_temp_min_c": -10,
+        "operating_temp_max_c": 40,
+        "service_ceiling_m": 5000
+      },
+      "payload_max_kg": null,
+      "max_wind_kt": 23.3
+    },
+    {
+      "drone_id": "DRONE-XYZ-007",
+      "manufacturer": "Autel Robotics",
+      "model": "EVO Max 4T",
+      "category": "enterprise",
+      "constraints": {
+        "max_wind_resistance_takeoff_landing_kt": 20.8,
+        "max_wind_resistance_cruise_kt": 23.3,
+        "operating_temp_min_c": -20,
+        "operating_temp_max_c": 50
+      },
+      "payload_max_kg": null,
+      "max_wind_kt": 23.3
+    },
+    {
+      "drone_id": "DRONE-XYZ-008",
+      "manufacturer": "Skydio",
+      "model": "Skydio 2+",
+      "category": "consumer/prosumer",
+      "constraints": {
+        "max_wind_resistance_kt": 21.7,
+        "operating_temp_min_c": -5,
+        "operating_temp_max_c": 40,
+        "service_ceiling_ft_density_altitude": 15000
+      },
+      "payload_max_kg": null,
+      "max_wind_kt": 21.7
+    },
+    {
+      "drone_id": "DRONE-XYZ-009",
+      "manufacturer": "Parrot",
+      "model": "ANAFI Ai",
+      "category": "enterprise",
+      "constraints": {
+        "max_wind_resistance_in_flight_kt": 27.2,
+        "max_wind_resistance_takeoff_landing_kt": 23.3,
+        "operating_temp_min_c": -10,
+        "operating_temp_max_c": 40,
+        "service_ceiling_m": 5000
+      },
+      "payload_max_kg": null,
+      "max_wind_kt": 27.2
+    }
+  ]

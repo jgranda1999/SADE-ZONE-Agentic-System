@@ -12,6 +12,13 @@ from pydantic import BaseModel, Field
 # ============================================================================
 # Environment Agent Models
 # ============================================================================
+class ManufacturerFC(BaseModel):
+    """Manufacturer flight constraints."""
+    manufacturer: str
+    model: str
+    category: str
+    mfc_payload_max_kg: float
+    mfc_max_wind_kt: float
 
 class SpatialConstraints(BaseModel):
     """Spatial constraints from environment data."""
@@ -39,29 +46,24 @@ class RiskAssessment(BaseModel):
 
 class EnvironmentAgentOutput(BaseModel):
     """Output from Environment Agent (v2: includes recommendation, why for orchestrator)."""
+    manufacturer_fc: ManufacturerFC
     raw_conditions: RawConditions
     risk_assessment: RiskAssessment
-    constraint_suggestions: List[str] = Field(default_factory=list)
-    recommendation: Literal["LOW", "MEDIUM", "HIGH", "UNKNOWN"] = "UNKNOWN"
-    why: List[str] = Field(default_factory=list)
+    constraint_suggestions_wind: List[str] = Field(default_factory=list)
+    constraint_suggestions_payload: List[str] = Field(default_factory=list)
+    recommendation_wind: Literal["LOW", "MEDIUM", "HIGH", "UNKNOWN"] = "UNKNOWN"
+    recommendation_payload: Literal["LOW", "MEDIUM", "HIGH", "UNKNOWN"] = "UNKNOWN"
+    recommendation_prose_wind: str = ""
+    recommendation_prose_payload: str = ""
+    why_prose_wind: str = ""
+    why_prose_payload: str = ""
+    why_wind: List[str] = Field(default_factory=list)
+    why_payload: List[str] = Field(default_factory=list)
 
 
 # ============================================================================
 # Reputation Agent Models
 # ============================================================================
-
-class ReputationScore(BaseModel):
-    """Reputation score and tier."""
-    score: Optional[float] = None
-    tier: Optional[str] = None
-
-
-class ReputationSummary(BaseModel):
-    """Summary of reputation scores."""
-    pilot_reputation: ReputationScore
-    organization_reputation: ReputationScore
-    drone_reputation: ReputationScore
-
 
 class Incident(BaseModel):
     """Incident record."""
@@ -90,8 +92,7 @@ class ReputationRiskAssessment(BaseModel):
 
 
 class ReputationAgentOutput(BaseModel):
-    """Output from Reputation Agent (v2: includes orchestration fields for orchestrator)."""
-    reputation_summary: ReputationSummary
+    """Output from Reputation Agent (orchestration fields; no reputation_summary to avoid bias)."""
     incident_analysis: IncidentAnalysis
     risk_assessment: ReputationRiskAssessment
     drp_sessions_count: int = 0
@@ -99,7 +100,9 @@ class ReputationAgentOutput(BaseModel):
     demo_gust_max_kt: float = 0.0
     incident_codes: List[str] = Field(default_factory=list)
     n_0100_0101: int = 0
+    recommendation_prose: str = ""
     recommendation: Literal["LOW", "MEDIUM", "HIGH", "UNKNOWN"] = "UNKNOWN"
+    why_prose: str = ""
     why: List[str] = Field(default_factory=list)
 
 
@@ -210,4 +213,63 @@ class ClaimsAgentOutput(BaseModel):
     unresolved_incident_prefixes: List[str] = Field(default_factory=list)
     satisfied_actions: List[str] = Field(default_factory=list)
     unsatisfied_actions: List[str] = Field(default_factory=list)
+    recommendation_prose: str = ""
+    why_prose: str = ""
     why: List[str] = Field(default_factory=list)
+
+
+# ============================================================================
+# Orchestrator Output (decision + visibility contract)
+# ============================================================================
+# Visibility uses the same Pydantic contracts as sub-agent outputs:
+# environment_agent -> EnvironmentAgentOutput, reputation_agent -> ReputationAgentOutput,
+# claims_agent -> wrapper with called + ClaimsAgentOutput (when called).
+
+class EntryRequestVisibility(BaseModel):
+    """Visibility copy of the entry request (must match input field names)."""
+    sade_zone_id: str
+    pilot_id: str
+    organization_id: str
+    drone_id: str
+    payload: str
+    requested_entry_time: str
+    request_type: str
+
+
+class ClaimsAgentVisibility(BaseModel):
+    """Claims agent in visibility: called flag + full ClaimsAgentOutput when called."""
+    called: bool = False
+    satisfied: bool = False
+    resolved_incident_prefixes: List[str] = Field(default_factory=list)
+    unresolved_incident_prefixes: List[str] = Field(default_factory=list)
+    satisfied_actions: List[str] = Field(default_factory=list)
+    unsatisfied_actions: List[str] = Field(default_factory=list)
+    recommendation_prose: str = ""
+    why_prose: str = ""
+    why: List[str] = Field(default_factory=list)
+
+
+class Visibility(BaseModel):
+    """Full visibility: entry_request copy + full sub-agent output contracts."""
+    entry_request: EntryRequestVisibility
+    environment_agent: EnvironmentAgentOutput
+    reputation_agent: ReputationAgentOutput
+    claims_agent: ClaimsAgentVisibility
+    rule_trace: List[str] = Field(default_factory=list)
+
+
+class Decision(BaseModel):
+    """Decision object in orchestrator output."""
+    type: Literal["APPROVED", "APPROVED-CONSTRAINTS", "ACTION-REQUIRED", "DENIED"]
+    sade_message: str
+    constraints: List[str] = Field(default_factory=list)
+    action_id: Optional[str] = None
+    actions: List[str] = Field(default_factory=list)
+    denial_code: Optional[str] = None
+    explanation: str = ""
+
+
+class OrchestratorOutput(BaseModel):
+    """Orchestrator final output (decision + visibility). Matches v3 prompt OUTPUT CONTRACT."""
+    decision: Decision
+    visibility: Visibility

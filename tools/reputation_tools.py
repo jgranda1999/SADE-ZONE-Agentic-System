@@ -14,8 +14,6 @@ from datetime import datetime, timedelta, timezone
 from agents import function_tool
 from models import (
     ReputationAgentOutput,
-    ReputationSummary,
-    ReputationScore,
     Incident,
     IncidentAnalysis,
     ReputationRiskAssessment,
@@ -118,7 +116,7 @@ def parse_incident_code(incident_code: str) -> tuple[str, str, str, str]:
 
 def _load_reputation_sessions(pilot_id: str, drone_id: str) -> List[Dict[str, Any]]:
     """
-    Load sessions from sade-mock-data/reputation_model.json filtered by pilot_id and uav_id.
+    Load sessions from sade-mock-data/reputation_model.json filtered by pilot_id and drone_id.
     Returns list of session dicts (time_in, time_out, incidents, record_type, wind_steady_kt, wind_gusts_kt, etc.).
     """
     if not _REPUTATION_MODEL_PATH.exists():
@@ -128,7 +126,7 @@ def _load_reputation_sessions(pilot_id: str, drone_id: str) -> List[Dict[str, An
         return []
     return [
         s for s in raw
-        if s.get("pilot_id") == pilot_id and s.get("uav_id") == drone_id
+        if s.get("pilot_id") == pilot_id and s.get("drone_id") == drone_id
     ]
 
 
@@ -141,13 +139,13 @@ def _retrieve_reputations_impl(
     """
     Retrieve historical trust signals for a DPO trio from sade-mock-data/reputation_model.json.
 
-    Sessions are filtered by pilot_id and uav_id (drone_id). Entry_time is used as the
+    Sessions are filtered by pilot_id and drone_id. Entry_time is used as the
     reference date for "recent" incident count (last 30 days).
 
     Args:
         pilot_id: Pilot identifier (e.g. PILOT-12345)
         org_id: Organization identifier (not in JSON; kept for API shape)
-        drone_id: Drone identifier (e.g. DRONE-XYZ-001), matches uav_id in JSON
+        drone_id: Drone identifier (e.g. DRONE-XYZ-001), matches drone_id in JSON
         entry_time: Optional ISO8601 datetime for recent-incident window (default 2026-01-26)
 
     Returns:
@@ -210,19 +208,11 @@ def _retrieve_reputations_impl(
         recent_incidents_count=recent_count
     )
     
-    # Mock reputation scores/tiers (in production, these come from endpoint)
-    # For testing, return null to simulate endpoint not providing scores
-    reputation_summary = ReputationSummary(
-        pilot_reputation=ReputationScore(score=8.5, tier="HIGH"),
-        organization_reputation=ReputationScore(score=7.2, tier="MEDIUM"),
-        drone_reputation=ReputationScore(score=9.0, tier="HIGH")
-    )
-    
-    # Risk assessment based on incidents
+    # Risk assessment based on incidents (no reputation_summary; decision from full model only)
     risk_level = "LOW"
     blocking_factors = []
     confidence_factors = []
-    
+
     if unresolved_present:
         high_severity_unresolved = any(
             not inc.resolved and inc.severity == "HIGH"
@@ -234,19 +224,13 @@ def _retrieve_reputations_impl(
         else:
             risk_level = "MEDIUM"
             blocking_factors.append("unresolved_incidents_present")
-    
+
     if recent_count == 0:
         confidence_factors.append("no_recent_incidents")
-    
+
     if all(inc.resolved for inc in all_incidents):
         confidence_factors.append("all_incidents_resolved")
-    
-    if reputation_summary.pilot_reputation.tier == "HIGH":
-        confidence_factors.append("high_pilot_reputation")
-    
-    if reputation_summary.drone_reputation.tier == "HIGH":
-        confidence_factors.append("high_drone_reputation")
-    
+
     risk_assessment = ReputationRiskAssessment(
         risk_level=risk_level,
         blocking_factors=blocking_factors,
@@ -290,8 +274,14 @@ def _retrieve_reputations_impl(
         prefixes = list(dict.fromkeys(c.split("-")[0] for c in incident_codes if "-" in c))
         why.append(f"incident_prefixes_present={prefixes[:10]}")
 
+    recommendation_prose = (
+        f"Historical risk signal: {risk_level}. Sessions={drp_sessions_count}, "
+        f"demo wind envelope steady={demo_steady_max_kt} kt gust={demo_gust_max_kt} kt; "
+        f"n_0100_0101={n_0100_0101}, unresolved_incidents_present={unresolved_present}."
+    )
+    why_prose = "; ".join(why[:8])
+
     return ReputationAgentOutput(
-        reputation_summary=reputation_summary,
         incident_analysis=incident_analysis,
         risk_assessment=risk_assessment,
         drp_sessions_count=drp_sessions_count,
@@ -300,6 +290,8 @@ def _retrieve_reputations_impl(
         incident_codes=incident_codes,
         n_0100_0101=n_0100_0101,
         recommendation=recommendation,
+        recommendation_prose=recommendation_prose,
+        why_prose=why_prose,
         why=why[:8],
     )
 
@@ -308,7 +300,7 @@ def _retrieve_reputations_impl(
 def retrieve_reputations(input_json: str) -> ReputationAgentOutput:
     """
     Retrieve historical trust signals for a Drone|Pilot|Organization trio from
-    sade-mock-data/reputation_model.json. Sessions are filtered by pilot_id and uav_id (drone_id).
+    sade-mock-data/reputation_model.json. Sessions are filtered by pilot_id and drone_id.
 
     Args:
         input_json: JSON string with pilot_id, org_id, drone_id, entry_time, request
