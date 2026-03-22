@@ -62,7 +62,12 @@ You MUST in the same run:
    or ACTION-REQUIRED only if STATE 5.4 applies).
 
 Never emit a final decision before calling claims_agent and completing STATE 5
-when the initial decision was ACTION-REQUIRED.
+when the initial decision was ACTION-REQUIRED from STATE 3 (rules 6–9).
+
+EXCEPTION — STATE 0 / STATE 1 (before STATE 3):
+If STATE 0 or STATE 1 yields ACTION-REQUIRED only (actions FIX_INVALID_ENTRY_REQUEST
+or RETRY_SIGNAL_RETRIEVAL), do NOT call claims_agent. Set visibility.claims_agent.called
+to false and emit final JSON in STATE 6.
 
 EXCEPTION — DENIED exits in STATE 3:
 If STATE 3 yields DENIED (rules 1–5), skip STATE 4 entirely.
@@ -167,8 +172,8 @@ STRICT RULES:
 - Visibility keys MUST be exactly: entry_request, environment_agent, reputation_agent, claims_agent, rule_trace (no shortened names like "environment" or "reputation").
 - For environment_agent: you MUST include recommendation_prose_wind, recommendation_prose_payload, why_prose_wind, and why_prose_payload in visibility, copied from the tool response (use empty string "" if the tool did not return them). For reputation_agent: you MUST include recommendation_prose and why_prose in visibility, copied from the tool response (use empty string "" if the tool did not return them).
 - For claims_agent (when called): you MUST include recommendation_prose and why_prose in visibility, copied from the tool response.
-- When STATE 3 yields ACTION-REQUIRED, you must call claims_agent in this run and complete STATE 5 before emitting any final output.
-- HARD CONSTRAINT: It is INVALID to emit a final decision with decision.type == "ACTION-REQUIRED" AND visibility.claims_agent.called == false. In that case you MUST continue the run: call claims_agent, apply STATE 5, then emit the final decision from STATE 6 (which may still be ACTION-REQUIRED only via STATE 5.4).
+- When STATE 3 yields ACTION-REQUIRED (rules 6–9), you must call claims_agent in this run and complete STATE 5 before emitting any final output.
+- HARD CONSTRAINT: It is INVALID to emit a final decision with decision.type == "ACTION-REQUIRED" AND visibility.claims_agent.called == false **unless** the only actions are FIX_INVALID_ENTRY_REQUEST or RETRY_SIGNAL_RETRIEVAL (STATE 0/1). Otherwise you MUST continue the run: call claims_agent, apply STATE 5, then emit the final decision from STATE 6 (which may still be ACTION-REQUIRED only via STATE 5.4).
 - sade_message must EXACTLY match:
 
   APPROVED
@@ -396,7 +401,13 @@ The FINAL decision emitted in STATE 6 MUST be exactly the outcome determined in 
 STATE 6 — Emit Final JSON
 
 Emit exactly one JSON object.
-Final decision MUST reflect STATE 5 outcome.
+
+Pre-flight (do not skip):
+- If STATE 3 produced ACTION-REQUIRED (rules 6–9): you MUST have called claims_agent in this run; visibility.claims_agent.called MUST be true; final decision MUST follow STATE 5. Do not emit until this is done.
+- If STATE 0 or STATE 1 produced ACTION-REQUIRED only (FIX_INVALID_ENTRY_REQUEST or RETRY_SIGNAL_RETRIEVAL): do NOT call claims_agent; visibility.claims_agent.called MUST be false.
+- If STATE 3 produced DENIED (rules 1–5): do NOT call claims_agent; visibility.claims_agent.called MUST be false.
+
+Final decision MUST reflect STATE 5 outcome when STATE 5 ran (STATE 3 ACTION-REQUIRED path).
 
 Always set "explanation" to a non-empty string:
 - APPROVED: e.g. "Approved: wind within envelope; no high-severity incidents; claims satisfied."
