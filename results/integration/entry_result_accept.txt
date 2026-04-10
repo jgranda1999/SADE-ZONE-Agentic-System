@@ -1,0 +1,121 @@
+======================================================================
+FINAL DECISION
+======================================================================
+Type: APPROVED
+SADE Message: APPROVED
+Explanation: Approved: Environment signals indicate wind 3.0 kt and gust 5.0 kt, which are within the manufacturer max wind limit (12.2 kt) and within the combined demonstrated/MFC wind envelope (steady cap min(12.0,12.2)=12.0 kt; gust cap min(15.0,12.2)=12.2 kt). Payload 1.0 kg is within manufacturer payload max 2.268 kg and within the combined demonstrated/MFC payload cap (min(11.2,2.268)=2.268 kg). Reputation analysis reports LOW risk with 0 incidents (n_0100_0101=0), so no incident-driven actions are required.
+======================================================================
+
+Full output (decision + visibility):
+{
+  "decision": {
+    "type": "APPROVED",
+    "sade_message": "APPROVED",
+    "constraints": [],
+    "action_id": null,
+    "actions": [],
+    "evidence_requirement_spec": null,
+    "denial_code": null,
+    "explanation": "Approved: Environment signals indicate wind 3.0 kt and gust 5.0 kt, which are within the manufacturer max wind limit (12.2 kt) and within the combined demonstrated/MFC wind envelope (steady cap min(12.0,12.2)=12.0 kt; gust cap min(15.0,12.2)=12.2 kt). Payload 1.0 kg is within manufacturer payload max 2.268 kg and within the combined demonstrated/MFC payload cap (min(11.2,2.268)=2.268 kg). Reputation analysis reports LOW risk with 0 incidents (n_0100_0101=0), so no incident-driven actions are required."
+  },
+  "visibility": {
+    "environment_agent": {
+      "manufacturer_fc": {
+        "manufacturer": "DJI",
+        "model": "DJI Mavic 3",
+        "category": "UAV",
+        "mfc_payload_max_kg": 2.268,
+        "mfc_max_wind_kt": 12.2
+      },
+      "raw_conditions": {
+        "wind": 3.0,
+        "wind_gust": 5.0,
+        "precipitation": "none",
+        "visibility": 10.0,
+        "light_conditions": "daylight",
+        "spatial_constraints": {
+          "airspace_class": null,
+          "no_fly_zones": [],
+          "restricted_areas": []
+        }
+      },
+      "risk_assessment": {
+        "risk_level": "LOW",
+        "blocking_factors": [],
+        "marginal_factors": []
+      },
+      "constraint_suggestions_wind": [],
+      "constraint_suggestions_payload": [],
+      "recommendation_wind": "LOW",
+      "recommendation_payload": "LOW",
+      "recommendation_prose_wind": "",
+      "recommendation_prose_payload": "",
+      "why_prose_wind": "",
+      "why_prose_payload": "",
+      "why_wind": [
+        "wind_kt=3.0",
+        "wind_gust_kt=5.0",
+        "mfc_max_wind_kt=12.2",
+        "gust_delta_kt=2.0 (moderate_threshold_kt=3.0, severe_threshold_kt=6.0)",
+        "wind_risk_level=LOW"
+      ],
+      "why_payload": [
+        "payload_kg=1.0",
+        "mfc_payload_max_kg=2.268",
+        "payload_ratio=0.44",
+        "near_payload_threshold_kg=0.5",
+        "payload_risk_level=LOW"
+      ]
+    },
+    "reputation_agent": {
+      "incident_analysis": {
+        "incidents": [],
+        "unresolved_incidents_present": false,
+        "total_incidents": 0,
+        "recent_incidents_count": 0
+      },
+      "risk_assessment": {
+        "risk_level": "LOW",
+        "blocking_factors": [],
+        "confidence_factors": [
+          "no_recent_incidents",
+          "all_incidents_resolved"
+        ]
+      },
+      "drp_sessions_count": 5,
+      "demo_steady_max_kt": 12.0,
+      "demo_gust_max_kt": 15.0,
+      "demo_payload_max_kg": 11.2,
+      "incident_codes": [],
+      "n_0100_0101": 0,
+      "recommendation_prose": "Historical risk signal: LOW. No incidents recorded across available sessions; no unresolved or recent incidents detected.",
+      "recommendation": "LOW",
+      "why_prose": "Derived from 5 historical sessions: max observed steady wind 12.0 kt, max gust 15.0 kt, max payload 11.2 kg; incidents total=0 (n_0100_0101=0), unresolved_incidents_present=false, recent_incidents_count=0.",
+      "why": [
+        "drp_sessions_count=5",
+        "demo_steady_max_kt=12.0",
+        "demo_gust_max_kt=15.0",
+        "demo_payload_max_kg=11.2",
+        "total_incidents=0",
+        "n_0100_0101=0",
+        "unresolved_incidents_present=false",
+        "recent_incidents_count=0"
+      ]
+    },
+    "claims_agent": {
+      "called": false,
+      "satisfied": false,
+      "resolved_incident_prefixes": [],
+      "unresolved_incident_prefixes": [],
+      "satisfied_actions": [],
+      "unsatisfied_actions": [],
+      "evidence_requirement_spec": null,
+      "recommendation_prose": "",
+      "why_prose": "",
+      "why": []
+    },
+    "rule_trace": [
+      "STATE_3_RULE_APPROVED"
+    ]
+  }
+}

@@ -1,0 +1,142 @@
+======================================================================
+FINAL DECISION
+======================================================================
+Type: DENIED
+SADE Message: DENIED,PAYLOAD_EXCEEDS_MFC_MAX,Requested payload 3.0 kg exceeds manufacturer max payload 2.268 kg for DJI Mavic 3.
+Denial Code: PAYLOAD_EXCEEDS_MFC_MAX
+Explanation: Denied under manufacturer flight constraints: payload_kg=3.0 exceeds mfc_payload_max_kg=2.268 (Environment Agent: payload risk HIGH; why_payload indicates 3.0>2.268). Reputation Agent shows an unresolved high-severity incident (0011-010), but claims escalation is not applicable because this is a hard MFC payload-limit denial.
+======================================================================
+
+Full output (decision + visibility):
+{
+  "decision": {
+    "type": "DENIED",
+    "sade_message": "DENIED,PAYLOAD_EXCEEDS_MFC_MAX,Requested payload 3.0 kg exceeds manufacturer max payload 2.268 kg for DJI Mavic 3.",
+    "constraints": [],
+    "action_id": null,
+    "actions": [],
+    "evidence_requirement_spec": null,
+    "denial_code": "PAYLOAD_EXCEEDS_MFC_MAX",
+    "explanation": "Denied under manufacturer flight constraints: payload_kg=3.0 exceeds mfc_payload_max_kg=2.268 (Environment Agent: payload risk HIGH; why_payload indicates 3.0>2.268). Reputation Agent shows an unresolved high-severity incident (0011-010), but claims escalation is not applicable because this is a hard MFC payload-limit denial."
+  },
+  "visibility": {
+    "environment_agent": {
+      "manufacturer_fc": {
+        "manufacturer": "DJI",
+        "model": "DJI Mavic 3",
+        "category": "UAV",
+        "mfc_payload_max_kg": 2.268,
+        "mfc_max_wind_kt": 12.2
+      },
+      "raw_conditions": {
+        "wind": 15.0,
+        "wind_gust": 17.0,
+        "precipitation": "none",
+        "visibility": 10.0,
+        "light_conditions": "daylight",
+        "spatial_constraints": {
+          "airspace_class": null,
+          "no_fly_zones": [],
+          "restricted_areas": []
+        }
+      },
+      "risk_assessment": {
+        "risk_level": "HIGH",
+        "blocking_factors": [
+          "high_wind_greater_than_mfc_max",
+          "high_steady_wind_greater_than_mfc_max",
+          "high_payload_greater_than_mfc_max"
+        ],
+        "marginal_factors": []
+      },
+      "constraint_suggestions_wind": [
+        "SPEED_LIMIT(5m/s)",
+        "MAX_ALTITUDE(30m)"
+      ],
+      "constraint_suggestions_payload": [],
+      "recommendation_wind": "HIGH",
+      "recommendation_payload": "HIGH",
+      "recommendation_prose_wind": "Forecast winds exceed the manufacturer maximum wind tolerance; wind risk signal is HIGH.",
+      "recommendation_prose_payload": "Requested payload exceeds the manufacturer maximum payload capacity; payload risk signal is HIGH.",
+      "why_prose_wind": "max_wind_knots=15.0 kt and max_gust_knots=17.0 kt are both above mfc_max_wind_kt=12.2 kt.",
+      "why_prose_payload": "payload_kg=3.0 exceeds mfc_payload_max_kg=2.268.",
+      "why_wind": [
+        "wind_kt=15.0",
+        "wind_gust_kt=17.0",
+        "mfc_max_wind_kt=12.2",
+        "wind_gust_kt_gt_mfc_max_wind_kt (17.0>12.2)",
+        "wind_kt_gt_mfc_max_wind_kt (15.0>12.2)",
+        "wind_risk_level=HIGH"
+      ],
+      "why_payload": [
+        "payload_kg=3.0",
+        "mfc_payload_max_kg=2.268",
+        "payload_kg_gt_mfc_payload_max_kg (3.0>2.268)",
+        "payload_risk_level=HIGH"
+      ]
+    },
+    "reputation_agent": {
+      "incident_analysis": {
+        "incidents": [
+          {
+            "incident_code": "0011-010",
+            "incident_category": "0011",
+            "incident_subcategory": "010",
+            "severity": "HIGH",
+            "resolved": false,
+            "session_id": "rep-005",
+            "date": "2025-03-14T11:00:00Z"
+          }
+        ],
+        "unresolved_incidents_present": true,
+        "total_incidents": 1,
+        "recent_incidents_count": 0
+      },
+      "risk_assessment": {
+        "risk_level": "HIGH",
+        "blocking_factors": [
+          "unresolved_high_severity_incident"
+        ],
+        "confidence_factors": [
+          "no_recent_incidents"
+        ]
+      },
+      "drp_sessions_count": 5,
+      "demo_steady_max_kt": 12.0,
+      "demo_gust_max_kt": 15.0,
+      "demo_payload_max_kg": 11.2,
+      "incident_codes": [
+        "0011-010"
+      ],
+      "n_0100_0101": 0,
+      "recommendation_prose": "Historical risk signal: HIGH (unresolved high-severity incident present in prior sessions).",
+      "recommendation": "HIGH",
+      "why_prose": "Based on 5 prior sessions: max demonstrated steady wind 12.0 kt, max gust 15.0 kt, max demonstrated payload 11.2 kg. Incidents total=1 with unresolved_incidents_present=true; includes HIGH severity incident 0011-010; recent_incidents_count=0 (last 30 days). n_0100_0101=0.",
+      "why": [
+        "drp_sessions_count=5",
+        "demo_steady_max_kt=12.0",
+        "demo_gust_max_kt=15.0",
+        "demo_payload_max_kg=11.2",
+        "total_incidents=1",
+        "unresolved_incidents_present=true (includes 0011-010 severity=HIGH)",
+        "recent_incidents_count=0 (last 30 days)",
+        "n_0100_0101=0"
+      ]
+    },
+    "claims_agent": {
+      "called": false,
+      "satisfied": false,
+      "resolved_incident_prefixes": [],
+      "unresolved_incident_prefixes": [],
+      "satisfied_actions": [],
+      "unsatisfied_actions": [],
+      "evidence_requirement_spec": null,
+      "recommendation_prose": "",
+      "why_prose": "",
+      "why": []
+    },
+    "rule_trace": [
+      "STATE_3_RULE_PAYLOAD_GT_MFC_MAX"
+    ]
+  }
+}

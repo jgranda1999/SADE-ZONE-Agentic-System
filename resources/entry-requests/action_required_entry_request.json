@@ -6,7 +6,7 @@
     "request_time": "2026-03-09T17:55:00Z",
     "requested_entry_time": "2026-03-09T18:00:00Z",
     "requested_exit_time": "2026-03-09T19:00:00Z",
-    "payload": "1.6",
+    "payload": "2.0",
     "uav": {
       "drone_id": "drone-001",
       "model_id": "model-001",

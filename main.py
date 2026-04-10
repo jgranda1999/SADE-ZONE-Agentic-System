@@ -325,15 +325,36 @@ async def main():
     """
     Example entry request processing.
     """
-    if "good" in sys.argv:
-        entry_request_file = "resources/entry-requests/good_entry_request.json"
-        test_number = 1
-    elif "medium" in sys.argv:
-        entry_request_file = "resources/entry-requests/medium_entry_request.json"
-        test_number = 2
-    elif "bad" in sys.argv:
-        entry_request_file = "resources/entry-requests/bad_entry_request.json"
-        test_number = 3
+    if "accept" in sys.argv:
+        entry_request_file = "resources/entry-requests/accept_entry_request.json"
+        attestation_claims_file = "resources/attestation-claims/accept_attestation_claims.json"
+        reputation_records_file = "resources/reputation-records/accept_reputation_records.json"
+        entry_request_history_file = "resources/entry-request-history/entry_request_history.json"
+        test_name = "accept"
+    elif "accept_with_constraints" in sys.argv:
+        entry_request_file = "resources/entry-requests/accept_with_constraints_entry_request.json"
+        attestation_claims_file = "resources/attestation-claims/accept_with_constraints_attestation_claims.json"
+        reputation_records_file = "resources/reputation-records/accept_with_constraints_reputation_records.json"
+        entry_request_history_file = "resources/entry-request-history/entry_request_history.json"
+        test_name = "accept_with_constraints"
+    elif "action_required" in sys.argv:
+        entry_request_file = "resources/entry-requests/action_required_entry_request.json"
+        attestation_claims_file = "resources/attestation-claims/action_required_attestation_claims.json"
+        reputation_records_file = "resources/reputation-records/action_required_reputation_records.json"
+        entry_request_history_file = "resources/entry-request-history/entry_request_history.json"
+        test_name = "action_required"
+    elif "deny" in sys.argv:
+        entry_request_file = "resources/entry-requests/deny_entry_request.json"
+        attestation_claims_file = "resources/attestation-claims/deny_attestation_claims.json"
+        reputation_records_file = "resources/reputation-records/deny_reputation_records.json"
+        entry_request_history_file = "resources/entry-request-history/entry_request_history.json"
+        test_name = "deny"
+    elif 'no_reputation_records' in sys.argv:
+        entry_request_file = "resources/entry-requests/no_reputation_records_entry_request.json"
+        attestation_claims_file = "resources/attestation-claims/no_reputation_records_attestation_claims.json"
+        reputation_records_file = "resources/reputation-records/no_reputation_records_reputation_records.json"
+        entry_request_history_file = "resources/entry-request-history/entry_request_history.json"
+        test_name = "no_reputation_records"
     else:
         raise ValueError("Invalid entry request file")
 
@@ -346,11 +367,11 @@ async def main():
     with open(entry_request_file, "r") as f:
         request = json.load(f)
     # Adding other resources to the request
-    with open("resources/attestation_claims.json", "r") as f:
+    with open(attestation_claims_file, "r") as f:
         request["attestation_claims"] = json.load(f)
-    with open("resources/reputation_records.json", "r") as f:
+    with open(reputation_records_file, "r") as f:
         request["reputation_records"] = json.load(f)
-    with open("resources/entry_request_history.json", "r") as f:
+    with open(entry_request_history_file, "r") as f:
         request["entry_request_history"] = json.load(f)
     
     print("=" * 70)
@@ -378,7 +399,7 @@ async def main():
         #
         # Recommended pattern: enumerate(example_request, start=1) in main()
 
-        output_filename = f"results/integration/entry_result_{test_number}.txt"
+        output_filename = f"results/integration/entry_result_{test_name}.txt"
         with open(output_filename, "w") as f:
             f.write("=" * 70 + "\n")
             f.write("FINAL DECISION\n")

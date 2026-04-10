@@ -176,7 +176,7 @@
       "types": "6S, 1.5Ah, Pack A"
     },
     "number_of_recharges": 0,
-    "incidents": ["0101-100"],
+    "incidents": [],
     "entry_decision": "0100000000"
   },
   {
@@ -296,7 +296,7 @@
       "types": "6S, 1.5Ah, Pack A"
     },
     "number_of_recharges": 0,
-    "incidents": ["0011-010"],
+    "incidents": [],
     "entry_decision": "1000100008"
   }
 ]
