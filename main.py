@@ -7,6 +7,8 @@ from typing import Dict, Any, Iterable
 from resources import *
 
 from agents import Agent, Runner, trace, ModelSettings
+from evaluation_api_response import to_evaluation_api_payload
+
 try:
     from openai import APIConnectionError, APITimeoutError, RateLimitError, APIStatusError
 except Exception:  # pragma: no cover - keep runtime resilient if SDK shape changes
@@ -395,6 +397,13 @@ async def main():
     
     try:
         output = await process_entry_request(request)
+        
+        # Convert output to evaluation API payload
+        payload = to_evaluation_api_payload(
+                        output,
+                        request["evaluation_id"],
+                        request["evaluation_series_id"],
+                    )
         decision = output.get("decision", {})
         decision_type = decision.get("type", "UNKNOWN")
         sade_message = decision.get("sade_message", "")
@@ -410,6 +419,11 @@ async def main():
         # Recommended pattern: enumerate(example_request, start=1) in main()
 
         output_filename = f"results/integration/entry_result_{test_name}.txt"
+        payload_filename = f"results/integration/entry_result_SADE_API_{test_name}.json"
+        with open(payload_filename, "w") as f:
+            json.dump(payload, f, indent=2)
+        print(f"\nSADE API Response Payload written to {payload_filename}")
+        
         with open(output_filename, "w") as f:
             f.write("=" * 70 + "\n")
             f.write("FINAL DECISION\n")

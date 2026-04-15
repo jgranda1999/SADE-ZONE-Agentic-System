@@ -3,7 +3,7 @@ FINAL DECISION
 ======================================================================
 Type: APPROVED
 SADE Message: APPROVED
-Explanation: Approved: Environment signals show wind_now_kt=3.0 and gust_now_kt=5.0, well below the manufacturer max wind (mfc_max_wind_kt=12.2) for the DJI Mavic 3, and payload_kg=1.0 is below mfc_payload_max_kg=2.268. Reputation is first-time/synthetic (no historical reputation_records), so demonstrated wind caps are aligned to MFC and no incidents are present. Although PART_107 verification was required by the certification gate, claims verification confirms the provided CERTIFICATION/PART_107 claim is SATISFIED and valid for the requested entry time; therefore no remaining actions or constraints are required.
+Explanation: Approved: Environment signals show steady wind 3.0 kt and gusts 5.0 kt, both well below the DJI Mavic 3 MFC max wind (12.2 kt), and payload 1.0 kg is within the MFC payload max (2.268 kg). First-time DPO synthetic reputation profile has no incidents and uses demonstrated caps aligned to MFC; PART_107 certification is on file and valid for the requested entry time. No wind/payload envelope exceedances or near-envelope flags were triggered, and no claims escalation was required.
 ======================================================================
 
 Full output (decision + visibility):
@@ -16,7 +16,7 @@ Full output (decision + visibility):
     "actions": [],
     "evidence_requirement_spec": null,
     "denial_code": null,
-    "explanation": "Approved: Environment signals show wind_now_kt=3.0 and gust_now_kt=5.0, well below the manufacturer max wind (mfc_max_wind_kt=12.2) for the DJI Mavic 3, and payload_kg=1.0 is below mfc_payload_max_kg=2.268. Reputation is first-time/synthetic (no historical reputation_records), so demonstrated wind caps are aligned to MFC and no incidents are present. Although PART_107 verification was required by the certification gate, claims verification confirms the provided CERTIFICATION/PART_107 claim is SATISFIED and valid for the requested entry time; therefore no remaining actions or constraints are required."
+    "explanation": "Approved: Environment signals show steady wind 3.0 kt and gusts 5.0 kt, both well below the DJI Mavic 3 MFC max wind (12.2 kt), and payload 1.0 kg is within the MFC payload max (2.268 kg). First-time DPO synthetic reputation profile has no incidents and uses demonstrated caps aligned to MFC; PART_107 certification is on file and valid for the requested entry time. No wind/payload envelope exceedances or near-envelope flags were triggered, and no claims escalation was required."
   },
   "visibility": {
     "environment_agent": {
@@ -48,19 +48,25 @@ Full output (decision + visibility):
       "constraint_suggestions_payload": [],
       "recommendation_wind": "LOW",
       "recommendation_payload": "LOW",
-      "recommendation_prose_wind": "",
-      "recommendation_prose_payload": "",
-      "why_prose_wind": "",
-      "why_prose_payload": "",
+      "recommendation_prose_wind": "Wind conditions are well below the manufacturer maximum wind tolerance.",
+      "recommendation_prose_payload": "Requested payload is within the manufacturer maximum payload capacity.",
+      "why_prose_wind": "Forecast steady wind (3.0 kt) and gusts (5.0 kt) are below the MFC max wind limit (12.2 kt), with low gust variability (2.0 kt).",
+      "why_prose_payload": "Requested payload (1.0 kg) is below the MFC payload maximum (2.268 kg), indicating low payload-related risk.",
       "why_wind": [
-        "wind_kt=3.0; wind_gust_kt=5.0; mfc_max_wind_kt=12.2",
-        "gust_delta_kt=2.0 (moderate_threshold_kt=3.0; severe_threshold_kt=6.0)",
-        "wind_gust_kt (5.0) well below mfc_max_wind_kt (12.2) => wind_risk=LOW"
+        "wind_kt=3.0",
+        "wind_gust_kt=5.0",
+        "mfc_max_wind_kt=12.2",
+        "gust_delta_kt=2.0",
+        "moderate_delta_threshold_kt=3.0",
+        "severe_delta_threshold_kt=6.0",
+        "wind_risk_level=LOW"
       ],
       "why_payload": [
-        "payload_kg=1.0; mfc_payload_max_kg=2.268",
-        "payload_ratio=0.44; near_payload_threshold_kg=0.5",
-        "payload_kg (1.0) below mfc_payload_max_kg (2.268) => payload_risk=LOW"
+        "payload_kg=1.0",
+        "mfc_payload_max_kg=2.268",
+        "payload_ratio=0.441",
+        "near_payload_threshold_kg=0.5",
+        "payload_risk_level=LOW"
       ]
     },
     "reputation_agent": {
@@ -85,38 +91,32 @@ Full output (decision + visibility):
       "incident_codes": [],
       "n_0100_0101": 0,
       "recommendation": "LOW",
-      "recommendation_prose": "No historical reputation records provided; demonstrated wind caps are aligned to the manufacturer wind maximum for orchestration.",
-      "why_prose": "First-time DPO with no reputation history; wind demonstration caps are set to the MFC max wind and there are no incidents on file.",
+      "recommendation_prose": "No historical reputation records are available; demonstrated wind caps are aligned to the manufacturer max wind for orchestration purposes.",
+      "why_prose": "No historical reputation records are available; demonstrated wind caps are aligned to the manufacturer max wind for orchestration purposes.",
       "why": [
         "drp_sessions_count=0",
-        "demo_steady_max_kt=demo_gust_max_kt=mfc_max_wind_kt=12.2",
-        "demo_payload_max_kg=0.0",
-        "incident_codes=[] (no incidents)"
+        "demo_steady_max_kt_equals_mfc_max_wind_kt=12.2",
+        "demo_gust_max_kt_equals_mfc_max_wind_kt=12.2",
+        "demo_payload_max_kg=0.0; no payload demonstrations",
+        "no_incidents"
       ]
     },
     "claims_agent": {
-      "called": true,
-      "satisfied": true,
+      "called": false,
+      "satisfied": false,
       "resolved_incident_prefixes": [],
       "unresolved_incident_prefixes": [],
-      "satisfied_actions": [
-        "PART_107_VERIFICATION"
-      ],
+      "satisfied_actions": [],
       "unsatisfied_actions": [],
       "evidence_requirement_spec": null,
-      "recommendation_prose": "Verified that the pilot has a valid Part 107 certification claim covering the requested entry time; no further action is required for the specified required_actions list.",
-      "why_prose": "PART_107_VERIFICATION was required and is satisfied by a CERTIFICATION claim (PART_107) with status SATISFIED that was issued before the requested entry time and does not expire until after it.",
-      "why": [
-        "required_actions includes PART_107_VERIFICATION",
-        "found CERTIFICATION claim with keyword=PART_107, expr=PART_107, status=SATISFIED",
-        "issued_at (2026-03-01T10:00:00Z) is on/before requested_entry_time (2026-03-09T18:00:00Z)",
-        "expires_at (2027-03-01T10:00:00Z) is on/after requested_entry_time (2026-03-09T18:00:00Z)"
-      ]
+      "recommendation_prose": "",
+      "why_prose": "",
+      "why": []
     },
     "rule_trace": [
       "STATE_1_FIRST_TIME_DPO_SYNTHETIC_REPUTATION",
-      "STATE_3_RULE_PART_107_REQUIRED",
-      "STATE_5_RULE_CLAIMS_SATISFIED_APPROVED"
+      "STATE_3_RULE_APPROVED",
+      "STATE_3_RULE_PART_107_ON_FILE"
     ]
   }
 }
