@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 tools/__pycache__/
-results/integration/*.json
-results/integration/*.txt
+results/
+.venv/
+resources/

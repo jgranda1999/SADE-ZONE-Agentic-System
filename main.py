@@ -125,11 +125,11 @@ def load_prompt(prompt_file: str, prompts_dir: str = "prompts") -> str:
 
 
 # Load agent prompts (v3: orchestrator, env, rm, claims with visibility _prose; v1: action_required for SafeCert tool)
-ORCHESTRATOR_PROMPT = load_prompt("orchestrator_prompt.md", prompts_dir="v5_prompts")
-ENVIRONMENT_AGENT_PROMPT = load_prompt("env_agent_prompt.md", prompts_dir="v5_prompts")
-REPUTATION_AGENT_PROMPT = load_prompt("rm_agent_prompt.md", prompts_dir="v5_prompts")
+ORCHESTRATOR_PROMPT = load_prompt("orchestrator_prompt.md", prompts_dir="prompts")
+ENVIRONMENT_AGENT_PROMPT = load_prompt("env_agent_prompt.md", prompts_dir="prompts")
+REPUTATION_AGENT_PROMPT = load_prompt("rm_agent_prompt.md", prompts_dir="prompts")
 # ACTION_REQUIRED_AGENT_PROMPT = load_prompt("action_required_agent_prompt.md")
-CLAIMS_AGENT_PROMPT = load_prompt("claims_agent_prompt.md", prompts_dir="v5_prompts")
+CLAIMS_AGENT_PROMPT = load_prompt("claims_agent_prompt.md", prompts_dir="prompts")
 
 
 # Sub-Agents (Advisory Only - Never Make Decisions)
