@@ -1,7 +1,7 @@
 # SADE v5 Contract Regression Checklist
 
 Use this checklist after any changes to:
-- `v5_prompts/*.md`
+- `prompts/*.md`
 - `models.py`
 - `main.py` tool descriptions
 
@@ -34,7 +34,7 @@ Goal: keep orchestrator/sub-agent contracts aligned and prevent schema drift.
   - has both `recommendation_wind` and `recommendation_payload`
   - includes `why_wind` and `why_payload`
 - `ReputationAgentOutput`
-  - includes `demo_steady_max_kt`, `demo_gust_max_kt`, `demo_payload_max_kg`, `incident_codes`, `n_0100_0101`
+  - includes `demo_steady_max_m_s`, `demo_gust_max_m_s`, `demo_payload_max_kg`, `incident_codes`, `n_0100_0101`
 - `ClaimsAgentOutput`
   - when `satisfied=false`, `evidence_requirement_spec` is present with **non-empty** `categories` (matches `main.py` `parse_orchestrator_output` guards)
   - when `satisfied=true`, `evidence_requirement_spec` is null (STATE 5.3 approve path; orchestrator STRICT RULES)

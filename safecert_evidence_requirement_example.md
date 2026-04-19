@@ -23,7 +23,7 @@ The scenario uses **DJI Mavic 3**–class limits so the *current* forecast is in
 
 Key fields (see full JSON in `action_required_entry_request.json`):
 
-- **`uav_model.max_wind_tolerance`:** `12.2` kt — forecast gusts `11.0` kt are within tolerance but high utilization (~90% of max).
+- **`uav_model.max_wind_tolerance_m_s`:** `6.276` m/s (SI wind; air temps remain °F in `*_temp_f`) — forecast gusts `5.659` m/s are within tolerance but high utilization (~90% of max).
 - **`uav_model.max_payload_cap_kg`:** `2.268` — requested **`payload`** `"2.0"` kg leaves a small margin (`~0.27` kg), so payload is “near limit” without being a denial by environment alone.
 - **`zone.sade_zone_id`:** `zone-001` — matches `weather_forecast.sade_zone_id`.
 
@@ -38,7 +38,7 @@ Key fields (see full JSON in `action_required_entry_request.json`):
 
 **Attestation claims (on file before this evaluation):**
 
-1. **`ENVIRONMENT` / `MAX_WIND_GUST(24.3kt)`** — `SATISFIED` with meta showing observed gust below the certified ceiling. This is the **environmental capability** artifact used later by the claims agent to mark **`MITIGATE_WIND_RISK`** as satisfied (wind mitigation proof present vs. current gusts).
+1. **`ENVIRONMENT` / `MAX_WIND_GUST(12.501m/s)`** — `SATISFIED` with meta showing observed gust below the certified ceiling. This is the **environmental capability** artifact used later by the claims agent to mark **`MITIGATE_WIND_RISK`** as satisfied (wind mitigation proof present vs. current gusts).
 2. **`CAPABILITY` / `FOLLOWUP_REPORT(incident_code=0011-010)`** — `SATISFIED`. Per the claims-agent contract, follow-up alone does **not** remove the need for verified **`INCIDENT_MITIGATION`** when mitigation is still unproven; both incidents still produce mitigation rows in the evidence spec.
 3. **No `CERTIFICATION` / `PART_107`** claim valid at `requested_entry_time` — so **`PART_107_VERIFICATION`** stays unsatisfied.
 
@@ -48,7 +48,7 @@ There is **no** on-file claim for **`0101-100`** follow-up or mitigation.
 
 From `weather_forecast` on the entry request:
 
-- `max_wind_knots`: `9.0`, `max_gust_knots`: `11.0` — within `uav_model.max_wind_tolerance` (`12.2`).
+- `max_wind_m_s`: `4.630`, `max_gust_m_s`: `5.659` — within `uav_model.max_wind_tolerance_m_s` (`6.276`).
 - Temperature and visibility are benign for this example; they are not pulled into the evidence requirement spec because the unresolved gaps are incident + Part 107, not a missing weather attestation.
 
 #### 1.4 Entry request history

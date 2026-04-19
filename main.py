@@ -154,7 +154,7 @@ reputation_agent = Agent(
     output_type=ReputationAgentOutput,
     handoff_description=(
         "Analyzes provided reputation_records and returns deterministic "
-        "ReputationAgentOutput (demo_steady_max_kt, demo_gust_max_kt, demo_payload_max_kg, "
+        "ReputationAgentOutput (demo_steady_max_m_s, demo_gust_max_m_s, demo_payload_max_kg, "
         "incident_codes, n_0100_0101, incident_analysis, risk_assessment, recommendation, why)."
     ),
 )
@@ -187,7 +187,7 @@ orchestrator_agent = Agent(
                 "Analyze environmental and MFC context from the provided minimal environment input. "
                 "Input: JSON string with exactly the EnvironmentAgentInput subset: payload, uav, uav_model, weather_forecast. "
                 "Do not pass the full entry request and do not include unrelated blocks (reputation_records, attestation_claims, entry_request_history, pilot, zone). "
-                "Returns: EnvironmentAgentOutput (manufacturer_fc with manufacturer, model, category, mfc_payload_max_kg, mfc_max_wind_kt; raw_conditions; risk_assessment; constraint_suggestions_wind; constraint_suggestions_payload; recommendation_wind; recommendation_payload; recommendation_prose_wind; recommendation_prose_payload; why_prose_wind; why_prose_payload; why_wind; why_payload)."
+                "Returns: EnvironmentAgentOutput (manufacturer_fc with manufacturer, model, category, mfc_payload_max_kg, mfc_max_wind_m_s; raw_conditions; risk_assessment; constraint_suggestions_wind; constraint_suggestions_payload; recommendation_wind; recommendation_payload; recommendation_prose_wind; recommendation_prose_payload; why_prose_wind; why_prose_payload; why_wind; why_payload)."
             ),
         ),
         reputation_agent.as_tool(
@@ -196,7 +196,7 @@ orchestrator_agent = Agent(
                 "Analyze provided historical reputation_records for the current DPO context. "
                 "Input: JSON string with exactly the ReputationAgentInput subset: reputation_records. "
                 "Do not pass the full entry request and do not include unrelated blocks (attestation_claims, weather_forecast, uav_model, pilot, uav, zone, entry_request_history). "
-                "Returns: ReputationAgentOutput (validated Pydantic model) with incident_analysis, risk_assessment, demo_steady_max_kt, demo_gust_max_kt, demo_payload_max_kg, incident_codes, and n_0100_0101. "
+                "Returns: ReputationAgentOutput (validated Pydantic model) with incident_analysis, risk_assessment, demo_steady_max_m_s, demo_gust_max_m_s, demo_payload_max_kg, incident_codes, and n_0100_0101. "
                 "If entry_request.reputation_records is missing or empty [], do NOT call this tool; the orchestrator prompt STATE 1 builds FIRST_TIME_DPO_REPUTATION_PROFILE from environment_agent MFC instead."
             ),
         ),

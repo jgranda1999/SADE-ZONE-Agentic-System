@@ -99,7 +99,7 @@ class ToEvaluationApiPayloadTests(unittest.TestCase):
     _FIXED_TIME = "2026-03-27T21:19:48Z"
 
     def test_approved_from_integration_file(self):
-        data = _load_integration_decision_visibility("results/integration/entry_result_1.txt")
+        data = _load_integration_decision_visibility("results/local-integration/entry_result_1.txt")
         out = to_evaluation_api_payload(
             data,
             self._EID,
@@ -117,7 +117,7 @@ class ToEvaluationApiPayloadTests(unittest.TestCase):
 
     def test_approved_constraints_from_integration_file(self):
         data = _load_integration_decision_visibility(
-            "results/integration/entry_result_accept_with_constraints.txt"
+            "results/local-integration/entry_result_accept_with_constraints.txt"
         )
         out = to_evaluation_api_payload(
             data,
@@ -138,7 +138,7 @@ class ToEvaluationApiPayloadTests(unittest.TestCase):
 
     def test_action_required_request_id_normalized(self):
         data = _load_integration_decision_visibility(
-            "results/integration/entry_result_action_required.txt"
+            "results/local-integration/entry_result_action_required.txt"
         )
         out = to_evaluation_api_payload(
             data,
@@ -155,7 +155,7 @@ class ToEvaluationApiPayloadTests(unittest.TestCase):
         self.assertIn("categories", spec)
 
     def test_denied_from_integration_file(self):
-        data = _load_integration_decision_visibility("results/integration/entry_result_deny.txt")
+        data = _load_integration_decision_visibility("results/local-integration/entry_result_deny.txt")
         out = to_evaluation_api_payload(
             data,
             self._EID,

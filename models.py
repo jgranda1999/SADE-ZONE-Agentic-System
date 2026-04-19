@@ -29,7 +29,9 @@ class EnvInputUAVModel(BaseModel):
     """UAV model capability block from entry request."""
     model_id: str
     name: str
-    max_wind_tolerance: float
+    max_wind_tolerance_m_s: float = Field(
+        ..., description="Manufacturer max wind tolerance for operations, meters per second."
+    )
     max_temp_f: float
     min_temp_f: float
     max_payload_cap_kg: float
@@ -40,12 +42,12 @@ class EnvInputWeatherForecast(BaseModel):
     sade_zone_id: str
     window_start: str = Field(..., description="ISO8601 datetime string")
     window_end: str = Field(..., description="ISO8601 datetime string")
-    max_wind_knots: float
-    max_gust_knots: float
+    max_wind_m_s: float = Field(..., description="Forecast steady wind, meters per second.")
+    max_gust_m_s: float = Field(..., description="Forecast wind gusts, meters per second.")
     min_temp_f: float
     max_temp_f: float
     precipitation_summary: str
-    visibility_min_nm: float
+    visibility_min_m: float = Field(..., description="Minimum visibility, meters.")
     source: str
     confidence: float
     generated_at: str = Field(..., description="ISO8601 datetime string")
@@ -79,10 +81,10 @@ class ClaimsInputPilot(BaseModel):
 
 class ClaimsInputWindContext(BaseModel):
     """Wind context passed from orchestrator state to claims agent."""
-    wind_now_kt: float
-    gust_now_kt: float
-    demo_steady_max_kt: float
-    demo_gust_max_kt: float
+    wind_now_m_s: float
+    gust_now_m_s: float
+    demo_steady_max_m_s: float
+    demo_gust_max_m_s: float
 
 
 class ClaimsInputPayloadContext(BaseModel):
@@ -115,7 +117,9 @@ class ManufacturerFC(BaseModel):
     model: str
     category: str
     mfc_payload_max_kg: float
-    mfc_max_wind_kt: float
+    mfc_max_wind_m_s: float = Field(
+        ..., description="Manufacturer max wind for operations, meters per second."
+    )
 
 class SpatialConstraints(BaseModel):
     """Spatial constraints from environment data."""
@@ -126,10 +130,10 @@ class SpatialConstraints(BaseModel):
 
 class RawConditions(BaseModel):
     """Raw environmental conditions."""
-    wind: float
-    wind_gust: float
+    wind: float = Field(..., description="Steady wind, meters per second.")
+    wind_gust: float = Field(..., description="Wind gusts, meters per second.")
     precipitation: Literal["none", "light", "moderate", "heavy"]
-    visibility: Optional[float] = None
+    visibility: Optional[float] = Field(None, description="Visibility, meters (from forecast).")
     light_conditions: Literal["daylight", "dusk", "dawn", "night"]
     spatial_constraints: SpatialConstraints
 
@@ -194,8 +198,8 @@ class ReputationAgentOutput(BaseModel):
     incident_analysis: IncidentAnalysis
     risk_assessment: ReputationRiskAssessment
     drp_sessions_count: int = 0
-    demo_steady_max_kt: float = 0.0
-    demo_gust_max_kt: float = 0.0
+    demo_steady_max_m_s: float = 0.0
+    demo_gust_max_m_s: float = 0.0
     demo_payload_max_kg: float = 0.0
     incident_codes: List[str] = Field(default_factory=list)
     n_0100_0101: int = 0
