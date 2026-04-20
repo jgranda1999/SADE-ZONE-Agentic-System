@@ -1,0 +1,49 @@
+{
+  "evaluation_id": "b80eac98-e26b-4988-9179-c4e84fc4530a",
+  "evaluation_series_id": "f17f4eab-35e6-4d2a-a802-1e00e51ade3b",
+  "submitted_at": "2026-03-27T21:19:47Z",
+  "entry_request_kind": "ENTRY",
+  "request_time": "2026-03-09T17:55:00Z",
+  "requested_entry_time": "2026-03-09T18:00:00Z",
+  "requested_exit_time": "2026-03-09T19:00:00Z",
+  "payload": "1.00",
+  "uav": {
+    "drone_id": "drone-001",
+    "model_id": "model-001",
+    "owner_id": "owner-001"
+  },
+  "uav_model": {
+    "model_id": "model-001",
+    "name": "DJI Mavic 3",
+    "max_wind_tolerance_m_s": 6.28,
+    "max_temp_f": 110.0,
+    "min_temp_f": -10.0,
+    "max_payload_cap_kg": 2.27
+  },
+  "pilot": {
+    "pilot_id": "pilot-001",
+    "organization_id": "org-001"
+  },
+  "zone": {
+    "sade_zone_id": "zone-001",
+    "name": "Zone 001"
+  },
+  "attestation_claims": [],
+  "reputation_records": [],
+  "weather_forecast": {
+    "sade_zone_id": "zone-001",
+    "window_start": "2026-03-09T18:00:00Z",
+    "window_end": "2026-03-09T19:00:00Z",
+    "max_wind_m_s": 1.54,
+    "max_gust_m_s": 2.57,
+    "min_temp_f": 50.0,
+    "max_temp_f": 60.0,
+    "precipitation_summary": "none",
+    "visibility_min_m": 18520.0,
+    "source": "NOOP_HARDCODED",
+    "confidence": 1.0,
+    "generated_at": "2026-03-09T18:00:00Z"
+  },
+  "test_overrides": {},
+  "entry_request_history": []
+}

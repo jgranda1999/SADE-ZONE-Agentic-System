@@ -29,8 +29,8 @@ from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from evaluation_job import run_evaluation_job
-from queue_redis import EnqueueOutcome, enqueue_decision_request
+from sade.evaluation_job import run_evaluation_job
+from sade.queue_redis import EnqueueOutcome, enqueue_decision_request
 
 logger = logging.getLogger(__name__)
 

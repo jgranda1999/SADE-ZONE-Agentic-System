@@ -25,22 +25,22 @@ The system uses a multi-agent architecture with a single decision authority:
 #### Environment Agent
 - **Purpose**: Summarize external operating conditions from the request payload
 - **Data**: Weather (wind, gusts, precipitation, visibility), manufacturer flight constraints (MFC), and related risk signals
-- **Exposure**: `environment_agent` — orchestrator calls this sub-agent as a tool (see `main.py`)
+- **Exposure**: `environment_agent` — orchestrator calls this sub-agent as a tool (see [`src/sade/main.py`](src/sade/main.py))
 
 #### Reputation Agent
 - **Purpose**: Interpret historical trust and reliability signals from provided records
 - **Data**: Pilot, organization, and drone reputation; incident history (including unresolved incidents)
-- **Exposure**: `reputation_agent` — orchestrator calls this sub-agent as a tool (see `main.py`)
+- **Exposure**: `reputation_agent` — orchestrator calls this sub-agent as a tool (see [`src/sade/main.py`](src/sade/main.py))
 
 #### Claims Agent
 - **Purpose**: Verify required actions against DPO claims and follow-up records
 - **Data**: Checks satisfaction of required actions, resolves incident prefixes, tracks unresolved incidents; may emit `evidence_requirement_spec` when not satisfied
-- **Exposure**: `claims_agent` — orchestrator calls this sub-agent as a tool (see `main.py`)
-- **Note**: Invoked when the orchestrator state machine requires claims verification (see `prompts/orchestrator_prompt.md`)
+- **Exposure**: `claims_agent` — orchestrator calls this sub-agent as a tool (see [`src/sade/main.py`](src/sade/main.py))
+- **Note**: Invoked when the orchestrator state machine requires claims verification (see [`src/sade/prompts/orchestrator_prompt.md`](src/sade/prompts/orchestrator_prompt.md))
 
 #### SafeCert / attestation (future hook)
 
-Entry JSON may include fields such as `safecert_pin` or `evidence_required` for re-evaluation flows. A dedicated SafeCert **Action Required** sub-agent (and companion attestation tools) is **not** wired into the current `main.py` graph; the orchestrator plus claims path covers the MVP decision contract.
+Entry JSON may include fields such as `safecert_pin` or `evidence_required` for re-evaluation flows. A dedicated SafeCert **Action Required** sub-agent (and companion attestation tools) is **not** wired into the current orchestrator graph in [`src/sade/main.py`](src/sade/main.py); the orchestrator plus claims path covers the MVP decision contract.
 
 ## Entry Request Model
 
@@ -52,7 +52,7 @@ The orchestrator consumes a **single merged JSON object** per evaluation. Typica
 - **Signals**: `weather_forecast`, `uav_model`
 - **Records**: `reputation_records`, `attestation_claims`, `entry_request_history` (lists; may be empty)
 
-Request geometry (regions, routes) lives inside the JSON as provided to the model; see [`resources/entry-requests/`](resources/entry-requests/) for worked examples.
+Request geometry (regions, routes) lives inside the JSON as provided to the model; see [`src/sade/resources/entry-requests-files/entry-requests/`](src/sade/resources/entry-requests-files/entry-requests/) for worked CLI fixtures (API-oriented samples live under [`src/sade/resources/entry-requests-api/`](src/sade/resources/entry-requests-api/)).
 
 ## Decision Outputs
 
@@ -63,7 +63,7 @@ The orchestrator emits exactly one internal decision (`decision.type` in JSON):
 - `ACTION-REQUIRED`: Additional evidence or certification required (may include `evidence_requirement_spec`)
 - `DENIED`: Fundamentally unsafe or policy-forbidden (includes `denial_code` where applicable)
 
-The HTTP ingest and [`evaluation_api_response.py`](evaluation_api_response.py) map these to the external evaluation API using **underscores** in `result.decision` (for example `APPROVED_CONSTRAINTS`, `ACTION_REQUIRED`). The human-readable narrative is carried in `decision.explanation` internally and exposed as `result.reason` in the API payload.
+The HTTP ingest and [`src/sade/evaluation_api_response.py`](src/sade/evaluation_api_response.py) map these to the external evaluation API using **underscores** in `result.decision` (for example `APPROVED_CONSTRAINTS`, `ACTION_REQUIRED`). The human-readable narrative is carried in `decision.explanation` internally and exposed as `result.reason` in the API payload.
 
 ## Evidence Grammar
 
@@ -93,26 +93,27 @@ git clone <repository-url>
 cd agentic-sade-dev
 ```
 
-2. Install dependencies:
+2. Install the package in editable mode (dependencies are declared in [`pyproject.toml`](pyproject.toml)):
 ```bash
 pip install -r requirements.txt
 ```
+This installs the local package as `-e .` (see [`requirements.txt`](requirements.txt)). For dev/test extras (e.g. `fakeredis`): `pip install -r requirements-dev.txt`.
 
-Note: The project uses the **OpenAI Agents SDK** (`openai-agents`), which provides the `agents` module (`Agent`, `Runner`, `trace`). The HTTP layer uses **FastAPI**, **Uvicorn**, and **httpx**; **`redis`** is installed for optional `REDIS_URL` queue mode (see `requirements.txt`). No Redis server is required unless you enable that mode.
+Note: The project uses the **OpenAI Agents SDK** (`openai-agents`), which provides the `agents` module (`Agent`, `Runner`, `trace`). The HTTP layer uses **FastAPI**, **Uvicorn**, and **httpx**; **`redis`** is installed for optional `REDIS_URL` queue mode. No Redis server is required unless you enable that mode.
 
 ### API Configuration
 
-The system uses OpenAI models via the Agents SDK. Agents are configured in [`main.py`](main.py) (currently `gpt-5.2` for the orchestrator and sub-agents). At minimum, set your OpenAI API key:
+The system uses OpenAI models via the Agents SDK. Agents are configured in [`src/sade/main.py`](src/sade/main.py) (currently `gpt-5.2` for the orchestrator and sub-agents). At minimum, set your OpenAI API key:
 
 ```bash
 export OPENAI_API_KEY=sk-...
 ```
 
-You can change models and `ModelSettings` in `main.py` following the OpenAI Agents SDK documentation.
+You can change models and `ModelSettings` in `src/sade/main.py` following the OpenAI Agents SDK documentation.
 
 ### Retries and rate limits
 
-Orchestrator runs use `_run_orchestrator_with_transport_retry` in `main.py`: **only transient** transport failures (timeouts, connection errors, HTTP 429 / 5xx where applicable) are retried, with short exponential backoff (capped). Contract and validation errors are **not** retried. If you hit sustained rate limits, reduce concurrency, increase backoff in code, or use an account tier with higher limits.
+Orchestrator runs use `_run_orchestrator_with_transport_retry` in `src/sade/main.py`: **only transient** transport failures (timeouts, connection errors, HTTP 429 / 5xx where applicable) are retried, with short exponential backoff (capped). Contract and validation errors are **not** retried. If you hit sustained rate limits, reduce concurrency, increase backoff in code, or use an account tier with higher limits.
 
 ## Usage
 
@@ -120,46 +121,48 @@ Orchestrator runs use `_run_orchestrator_with_transport_retry` in `main.py`: **o
 
 ```python
 import asyncio
-from main import process_entry_request
+from sade.main import process_entry_request
 
 async def run():
     # Build a full merged request dict (UUIDs, zone/pilot/uav, weather, claims, reputation, …)
-    request = { ... }  # see resources/entry-requests/*.json
+    request = { ... }  # see src/sade/resources/entry-requests-files/entry-requests/*.json
     out = await process_entry_request(request)
     print(out)  # { "decision": ..., "visibility": ... }
 
 asyncio.run(run())
 ```
 
-### CLI scenarios (`main.py`)
+### CLI scenarios (`sade.main`)
 
-`main.py` does not run without a scenario flag. It loads a base entry request from [`resources/entry-requests/`](resources/entry-requests/) and merges attestation, reputation, and history fixtures from [`resources/attestation-claims/`](resources/attestation-claims/), [`resources/reputation-records/`](resources/reputation-records/), and [`resources/entry-request-history/`](resources/entry-request-history/).
+The CLI driver does not run without a scenario flag. It loads a base entry request from [`src/sade/resources/entry-requests-files/entry-requests/`](src/sade/resources/entry-requests-files/entry-requests/) and merges attestation, reputation, and history fixtures from sibling folders under [`src/sade/resources/entry-requests-files/`](src/sade/resources/entry-requests-files/).
 
 ```bash
-python main.py accept
-python main.py accept_with_constraints
-python main.py action_required
-python main.py deny
-python main.py no_reputation_records
+python -m sade.main accept
+python -m sade.main accept_with_constraints
+python -m sade.main action_required
+python -m sade.main deny
+python -m sade.main no_reputation_records
 ```
 
-Outputs:
+Equivalent: `python -m sade accept` (same flags; uses [`src/sade/__main__.py`](src/sade/__main__.py)).
+
+Outputs (under the repository root via [`src/sade/paths.py`](src/sade/paths.py)):
 
 - Human-readable trace: `results/integration/entry_result_<scenario>.txt`
 - Evaluation-style JSON (same mapping as the API helper): `results/integration/entry_result_SADE_API_<scenario>.json`
 
-Create `results/integration/` if it does not exist, or adjust paths in `main()` if you prefer another directory.
+The `results/integration/` directory is created automatically when missing.
 
 ### Async HTTP ingest (`decision-request` / `decision-result`)
 
-The [`api.py`](api.py) FastAPI app accepts a **full** entry-request JSON (same merged shape as the CLI examples: include `evaluation_id`, `evaluation_series_id`, zone/pilot/UAV/weather, `attestation_claims`, `reputation_records`, etc.). Optional field **`decision_result_url`** (http/https): if present, the completed evaluation is `POST`ed there for that request only, and the field is removed before orchestration so it is not shown to the LLM. If omitted, `DECISION_RESULT_URL` is used when set.
+The [`src/sade/api.py`](src/sade/api.py) FastAPI app accepts a **full** entry-request JSON (same merged shape as the CLI examples: include `evaluation_id`, `evaluation_series_id`, zone/pilot/UAV/weather, `attestation_claims`, `reputation_records`, etc.). Optional field **`decision_result_url`** (http/https): if present, the completed evaluation is `POST`ed there for that request only, and the field is removed before orchestration so it is not shown to the LLM. If omitted, `DECISION_RESULT_URL` is used when set.
 
 **Execution model**
 
-- **No `REDIS_URL`**: After accepting a request, the API schedules [`run_evaluation_job`](evaluation_job.py) in-process (`asyncio.create_task`). Idempotency for duplicate `evaluation_id` values is tracked **in memory** in that process only.
-- **`REDIS_URL` set**: The API enqueues work to a **Redis Stream** ([`queue_redis.py`](queue_redis.py)) and returns **202** immediately. A separate process must run [`decision_worker.py`](decision_worker.py), which consumes the stream and calls `run_evaluation_job`. Idempotency keys live in Redis, so duplicate submits are deduplicated **across** API replicas that share the same Redis.
+- **No `REDIS_URL`**: After accepting a request, the API schedules [`run_evaluation_job`](src/sade/evaluation_job.py) in-process (`asyncio.create_task`). Idempotency for duplicate `evaluation_id` values is tracked **in memory** in that process only.
+- **`REDIS_URL` set**: The API enqueues work to a **Redis Stream** ([`src/sade/queue_redis.py`](src/sade/queue_redis.py)) and returns **202** immediately. A separate process must run the worker module, which consumes the stream and calls `run_evaluation_job`. Idempotency keys live in Redis, so duplicate submits are deduplicated **across** API replicas that share the same Redis.
 
-Evaluation work (orchestration, optional persistence under `results/api-integration/`, callback retries) is implemented once in [`evaluation_job.py`](evaluation_job.py).
+Evaluation work (orchestration, optional persistence under `results/api-integration/`, callback retries) is implemented once in [`src/sade/evaluation_job.py`](src/sade/evaluation_job.py).
 
 **Redis (optional, recommended for production-style setups)**
 
@@ -174,24 +177,24 @@ Then run the API and worker in separate terminals:
 
 ```bash
 # Terminal A — ingest only
-uvicorn api:app --host 0.0.0.0 --port 8000
+uvicorn sade.api:app --host 0.0.0.0 --port 8000
 
 # Terminal B — consumer (required when REDIS_URL is set)
-python decision_worker.py
+python -m sade.decision_worker
 ```
 
 **Run locally (in-process queue, no Redis):**
 
 ```bash
 pip install -r requirements.txt
-uvicorn api:app --host 0.0.0.0 --port 8000
+uvicorn sade.api:app --host 0.0.0.0 --port 8000
 ```
 
 **Environment variables:**
 
 | Variable | Purpose |
 |----------|---------|
-| `REDIS_URL` | If set (e.g. `redis://127.0.0.1:6379/0`), enqueue decision work to Redis Streams and require a [`decision_worker.py`](decision_worker.py) consumer. If unset, evaluations run in the API process as background tasks. |
+| `REDIS_URL` | If set (e.g. `redis://127.0.0.1:6379/0`), enqueue decision work to Redis Streams and require `python -m sade.decision_worker`. If unset, evaluations run in the API process as background tasks. |
 | `SADE_STREAM_KEY` | Redis stream name (default `sade:decisions`). |
 | `SADE_CONSUMER_GROUP` | Redis consumer group for `XREADGROUP` (default `sade-workers`). |
 | `SADE_IDEMPOTENCY_PREFIX` | Prefix for Redis keys that gate idempotent enqueue (default `sade:ingest`). |
@@ -222,10 +225,10 @@ When no API keys are configured, authentication is **not** enforced by the app (
 ```bash
 curl -sS -X POST "http://127.0.0.1:8000/decision-request" \
   -H "Content-Type: application/json" \
-  -d @resources/entry-requests/accept_entry_request.json
+  -d @src/sade/resources/entry-requests-files/entry-requests/accept_entry_request.json
 ```
 
-**Python helper** ([`scripts/send_decision_request.py`](scripts/send_decision_request.py), defaults to `resources/entry-requests/action_required_entry_request.json` and `http://127.0.0.1:8000/decision-request`):
+**Python helper** ([`scripts/send_decision_request.py`](scripts/send_decision_request.py), defaults to API-oriented JSON under `src/sade/resources/entry-requests-api/` and `http://127.0.0.1:8000/decision-request`):
 
 - **Default:** starts a local callback HTTP server, sets `decision_result_url` on the payload, POSTs to ingest, then **waits** until the API POSTs the finished evaluation back (same machine; the API must reach the callback URL—typically `uvicorn` on `127.0.0.1` while the script listens on `127.0.0.1` with an ephemeral port).
 - **`--accept-only`:** print the 202/200 acceptance response only (no listener). Use `--repeat` with this to hit idempotency (202 then 200).
@@ -234,14 +237,14 @@ Environment variable **`DECISION_REQUEST_URL`** overrides the ingest URL (same a
 
 ```bash
 # Terminal A
-uvicorn api:app --host 0.0.0.0 --port 8000
+uvicorn sade.api:app --host 0.0.0.0 --port 8000
 
 # Terminal B
 python scripts/send_decision_request.py
 python scripts/send_decision_request.py --wait-timeout 7200
 python scripts/send_decision_request.py --accept-only
 python scripts/send_decision_request.py --accept-only --repeat
-python scripts/send_decision_request.py --file resources/entry-requests/accept_entry_request.json
+python scripts/send_decision_request.py --file src/sade/resources/entry-requests-api/accept_entry_request.json
 ```
 
 Small **HTTP smoke scripts** (one status each) live under [`scripts/ingest_examples/`](scripts/ingest_examples/): `ingest_202_accepted.py`, `ingest_200_idempotent.py`, `ingest_400_bad_request.py`, `ingest_401_unauthorized.py`, `ingest_403_forbidden.py`, `ingest_404_not_found.py`. They print status code and body; use `DECISION_REQUEST_URL` and `SADE_INGEST_API_KEY` when the API requires them.
@@ -260,40 +263,38 @@ The Orchestrator follows a mandatory state machine:
 5. **Claims verification** (when required by the orchestrator state machine): verify required actions against DPO claims using the Claims Agent
 6. **Final decision**: Emit final JSON (`decision` + `visibility`) in one orchestrator run
 
-The orchestrator runs in a single pass (no outer loop) and must emit a final decision within the maximum turn limit (default 25 turns, see `DEFAULT_MAX_TURNS` in `main.py`).
+The orchestrator runs in a single pass (no outer loop) and must emit a final decision within the maximum turn limit (default 25 turns, see `DEFAULT_MAX_TURNS` in `src/sade/main.py`).
 
 ## Project Structure
 
 ```
 agentic-sade-dev/
-├── main.py                        # Orchestrator + sub-agents; CLI scenario driver
-├── api.py                         # FastAPI ingest (POST /decision-request); enqueue or in-process job
-├── evaluation_job.py              # run_evaluation_job: orchestration, persist, callback retries
-├── queue_redis.py                 # Redis Streams enqueue + worker read/ack loop
-├── decision_worker.py             # Standalone consumer for the Redis decision queue
+├── pyproject.toml                 # Package metadata, dependencies, setuptools package-data
+├── src/sade/                      # Installable Python package (`pip install -e .`)
+│   ├── __init__.py
+│   ├── __main__.py                # `python -m sade` → CLI scenario driver
+│   ├── paths.py                   # repo_root() for results/ at project root
+│   ├── main.py                    # Orchestrator + sub-agents; CLI scenario driver
+│   ├── api.py                     # FastAPI ingest (POST /decision-request)
+│   ├── evaluation_job.py          # run_evaluation_job: orchestration, persist, callbacks
+│   ├── queue_redis.py             # Redis Streams enqueue + worker loop
+│   ├── decision_worker.py         # Standalone consumer (run as `python -m sade.decision_worker`)
+│   ├── evaluation_api_response.py
+│   ├── models.py
+│   ├── prompts/                   # Agent prompts (package data)
+│   └── resources/                 # Fixture JSON (package data): entry-requests-files/, entry-requests-api/
+├── docker/                        # Reserved for Dockerfiles / Compose (phase 2)
 ├── docker-compose.yml             # Local Redis (append-only) for the queue
-├── evaluation_api_response.py     # Maps orchestrator JSON ↔ evaluation API payload
-├── models.py                      # Pydantic models for agent outputs and evidence grammar
-├── prompts/                       # Current agent prompts (loaded by main.py)
-│   ├── orchestrator_prompt.md
-│   ├── env_agent_prompt.md
-│   ├── rm_agent_prompt.md
-│   └── claims_agent_prompt.md
-├── resources/                     # Fixture JSON for CLI scenarios and API examples
-│   ├── entry-requests/
-│   ├── attestation-claims/
-│   ├── reputation-records/
-│   └── entry-request-history/
 ├── scripts/
-│   ├── send_decision_request.py   # Local ingest + optional callback listener
-│   └── ingest_examples/           # Tiny scripts per HTTP status (202, 200, 400, 401, 403, 404)
+│   ├── send_decision_request.py
+│   └── ingest_examples/
 ├── tests/
 │   └── test_evaluation_api_response.py
-├── results/                       # Generated outputs (gitignored as needed)
-│   ├── integration/             # main.py CLI: entry_result_<scenario>.txt / SADE_API JSON
-│   └── api-integration/          # api.py: entry_result_<evaluation_id>.json when enabled
-├── requirements.txt               # Includes redis async client for optional queue mode
-├── requirements-dev.txt           # Optional: dev/test extras (e.g. fakeredis for Redis tests)
+├── results/                       # Generated outputs (gitignored)
+│   ├── integration/               # CLI: entry_result_<scenario>.*
+│   └── api-integration/           # API persistence when enabled
+├── requirements.txt               # `-e .` editable install
+├── requirements-dev.txt           # `-e .[dev]`
 └── README.md
 ```
 
@@ -309,12 +310,12 @@ agentic-sade-dev/
 
 ### Tool Communication Protocol
 
-- The orchestrator passes each sub-agent a **JSON string** whose object shape matches the input contracts in [`models.py`](models.py) (`EnvironmentAgentInput`, `ReputationAgentInput`, `ClaimsAgentInput`, and nested types).
+- The orchestrator passes each sub-agent a **JSON string** whose object shape matches the input contracts in [`src/sade/models.py`](src/sade/models.py) (`EnvironmentAgentInput`, `ReputationAgentInput`, `ClaimsAgentInput`, and nested types).
 - Sub-agents return **Pydantic-validated** structured outputs (`EnvironmentAgentOutput`, `ReputationAgentOutput`, `ClaimsAgentOutput`).
 
 ### Mock versus production
 
-In this repository, **environment**, **reputation**, and **claims** are implemented as **LLM sub-agents** with structured outputs (`models.py`); the orchestrator passes JSON slices of the entry request per `prompts/*.md`. A production deployment would typically replace or augment these with deterministic services (weather, reputation store, claims DB) and/or attach real tools to the SDK agents, while keeping the same external contracts.
+In this repository, **environment**, **reputation**, and **claims** are implemented as **LLM sub-agents** with structured outputs (`src/sade/models.py`); the orchestrator passes JSON slices of the entry request per `src/sade/prompts/*.md`. A production deployment would typically replace or augment these with deterministic services (weather, reputation store, claims DB) and/or attach real tools to the SDK agents, while keeping the same external contracts.
 
 ### Constraints
 
@@ -331,10 +332,10 @@ Constraints must be:
 ## Testing
 
 - **Optional dev deps** (`fakeredis`, etc.): `pip install -r requirements-dev.txt`
-- **Unit tests**: `python -m unittest discover -s tests` (payload mapping and helpers in `tests/test_evaluation_api_response.py`). Some tests reference golden files under `results/integration/`; generate or refresh those with `python main.py <scenario>` when contracts change.
-- **CLI integration**: Run `python main.py accept` (and other scenarios) and inspect `results/integration/`.
-- **API integration (in-process)**: Run `uvicorn api:app` without `REDIS_URL`, then `python scripts/send_decision_request.py` (or `curl` as above) and inspect the callback JSON and `results/api-integration/` when persistence is enabled.
-- **API + Redis**: Set `REDIS_URL`, run `docker compose up -d`, start `uvicorn` and `python decision_worker.py`, then exercise ingest as above.
+- **Unit tests**: `python -m unittest discover -s tests` (requires `pip install -e .` or `pip install -r requirements.txt`). Some tests reference golden files under `results/integration/`; generate or refresh those with `python -m sade.main <scenario>` when contracts change.
+- **CLI integration**: Run `python -m sade.main accept` (and other scenarios) and inspect `results/integration/`.
+- **API integration (in-process)**: Run `uvicorn sade.api:app` without `REDIS_URL`, then `python scripts/send_decision_request.py` (or `curl` as above) and inspect the callback JSON and `results/api-integration/` when persistence is enabled.
+- **API + Redis**: Set `REDIS_URL`, run `docker compose up -d`, start `uvicorn sade.api:app` and `python -m sade.decision_worker`, then exercise ingest as above.
 
 ## Contributing
 
@@ -350,6 +351,6 @@ This is a safety-critical system. All changes must:
 
 ## References
 
-- See [`prompts/orchestrator_prompt.md`](prompts/orchestrator_prompt.md) for orchestrator decision logic
-- See [`models.py`](models.py) for data model specifications
-- See [`evaluation_api_response.py`](evaluation_api_response.py) for the external evaluation API mapping
+- See [`src/sade/prompts/orchestrator_prompt.md`](src/sade/prompts/orchestrator_prompt.md) for orchestrator decision logic
+- See [`src/sade/models.py`](src/sade/models.py) for data model specifications
+- See [`src/sade/evaluation_api_response.py`](src/sade/evaluation_api_response.py) for the external evaluation API mapping

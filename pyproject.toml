@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sade"
+version = "0.1.0"
+description = "SADE agentic orchestration and decision ingest"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "openai-agents>=0.9.0",
+    "openai>=2.9.0,<3",
+    "pydantic>=2.12.0,<3",
+    "fastapi>=0.115.0,<1",
+    "uvicorn[standard]>=0.32.0,<1",
+    "httpx>=0.28.0,<1",
+    "redis>=5.0.0,<6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "fakeredis>=2.24.0,<3",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sade = [
+    "prompts/*.md",
+    "resources/**/*",
+]

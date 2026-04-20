@@ -1,11 +1,2 @@
-# OpenAI Agents SDK (provides the 'agents' module: Agent, Runner, trace)
-openai-agents>=0.9.0
-# OpenAI API client (dependency of openai-agents; explicit for API calls)
-openai>=2.9.0,<3
-# Pydantic (used by models.py and the SDK)
-pydantic>=2.12.0,<3
-# Async HTTP API and callbacks
-fastapi>=0.115.0,<1
-uvicorn[standard]>=0.32.0,<1
-httpx>=0.28.0,<1
-redis>=5.0.0,<6
+# Editable install — dependencies are declared in pyproject.toml
+-e .

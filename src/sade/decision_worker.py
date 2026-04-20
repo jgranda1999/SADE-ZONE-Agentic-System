@@ -6,7 +6,7 @@ Requires ``REDIS_URL``. Run alongside the FastAPI app (separate process/containe
 Example::
 
     export REDIS_URL=redis://localhost:6379/0
-    python decision_worker.py
+    python -m sade.decision_worker
 """
 
 from __future__ import annotations
@@ -19,8 +19,8 @@ import sys
 
 import redis.asyncio as redis
 
-from evaluation_job import run_evaluation_job
-from queue_redis import default_consumer_name, worker_loop
+from sade.evaluation_job import run_evaluation_job
+from sade.queue_redis import default_consumer_name, worker_loop
 
 logging.basicConfig(
     level=logging.INFO,

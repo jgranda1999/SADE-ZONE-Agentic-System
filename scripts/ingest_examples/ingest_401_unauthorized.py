@@ -11,7 +11,10 @@ from pathlib import Path
 import httpx
 
 REPO = Path(__file__).resolve().parent.parent.parent
-DEFAULT_JSON = REPO / "resources/entry-requests/action_required_entry_request.json"
+DEFAULT_JSON = (
+    REPO
+    / "src/sade/resources/entry-requests-files/entry-requests/action_required_entry_request.json"
+)
 URL = os.environ.get("DECISION_REQUEST_URL", "http://127.0.0.1:8000/decision-request")
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-POST an entry request to the SADE ingest API (api.py).
+POST an entry request to the SADE ingest API (`sade.api:app`).
 
 Starts a small local HTTP server, adds ``decision_result_url`` to the payload,
 POSTs to ``/decision-request``, then blocks until the API POSTs the finished evaluation
@@ -82,17 +82,17 @@ def main() -> int:
     ).strip().lower() in ("1", "true", "yes")
 
     if "new_user_no_att_rr_erh" in argv:
-        default_file = REPO_ROOT / "resources/entry-requests-api/action_required_entry_request_no_att_rr_erh.json"
+        default_file = REPO_ROOT / "src/sade/resources/entry-requests-api/action_required_entry_request_no_att_rr_erh.json"
     elif "new_user" in argv:
-        default_file = REPO_ROOT / "resources/entry-requests-api/accept_entry_request_no_rr_erh.json"
+        default_file = REPO_ROOT / "src/sade/resources/entry-requests-api/accept_entry_request_no_rr_erh.json"
     elif "accept_entry_request" in argv:
-        default_file = REPO_ROOT / "resources/entry-requests-api/accept_entry_request.json"
+        default_file = REPO_ROOT / "src/sade/resources/entry-requests-api/accept_entry_request.json"
     elif "accept_entry_request_with_constraints" in argv:
-        default_file = REPO_ROOT / "resources/entry-requests-api/accept_with_contraints_entry_request.json"
+        default_file = REPO_ROOT / "src/sade/resources/entry-requests-api/accept_with_contraints_entry_request.json"
     elif "action_required_entry_request" in argv:
-        default_file = REPO_ROOT / "resources/entry-requests-api/action_required_entry_request.json"
+        default_file = REPO_ROOT / "src/sade/resources/entry-requests-api/action_required_entry_request.json"
     elif "deny_entry_request" in argv:
-        default_file = REPO_ROOT / "resources/entry-requests-api/deny_entry_request.json"
+        default_file = REPO_ROOT / "src/sade/resources/entry-requests-api/deny_entry_request.json"
     else:
         raise ValueError("Invalid entry request file")
 

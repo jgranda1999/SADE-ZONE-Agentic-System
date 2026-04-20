@@ -10,20 +10,18 @@ import asyncio
 import json
 import logging
 import os
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 import httpx
 
-from evaluation_api_response import (
+from sade.evaluation_api_response import (
     build_processing_failed_response,
     to_evaluation_api_payload,
 )
-from main import process_entry_request
+from sade.main import process_entry_request
+from sade.paths import repo_root
 
 logger = logging.getLogger(__name__)
-
-_REPO_ROOT = Path(__file__).resolve().parent
 
 _TRANSIENT_CALLBACK_STATUS = frozenset({429, 500, 502, 503, 504})
 _MAX_CALLBACK_ATTEMPTS = 5
@@ -90,7 +88,7 @@ def persist_orchestrator_output_json(
         )
         return
 
-    out_dir = _REPO_ROOT / "results" / "api-integration"
+    out_dir = repo_root() / "results" / "api-integration"
     out_dir.mkdir(parents=True, exist_ok=True)
     json_path = out_dir / f"entry_result_{evaluation_id}.json"
 

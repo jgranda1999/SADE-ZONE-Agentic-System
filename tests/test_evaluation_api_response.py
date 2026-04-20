@@ -4,7 +4,7 @@ import json
 import unittest
 from pathlib import Path
 
-from evaluation_api_response import (
+from sade.evaluation_api_response import (
     build_processing_failed_response,
     normalize_evidence_requirement_spec,
     parse_constraint_to_api_item,

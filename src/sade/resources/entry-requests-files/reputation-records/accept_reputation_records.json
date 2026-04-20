@@ -1,0 +1,317 @@
+[
+  {
+    "evaluation_id": "b80eac98-e26b-4988-9179-c4e84fc4530f",
+    "evaluation_series_id": "f17f4eab-35e6-4d2a-a802-1e00e51ade3d",
+    "reputation_record_id": "rep-001",
+    "applicable_scopes": [
+      "PILOT",
+      "UAV"
+    ],
+    "pilot_id": "pilot-001",
+    "drone_id": "drone-001",
+    "telemetry": {
+      "altitude_min_m": 12.0,
+      "altitude_max_m": 94.5,
+      "battery_start_pct": 98.0,
+      "battery_end_pct": 61.0,
+      "battery_voltage_start_v": 16.2,
+      "battery_voltage_end_v": 14.9
+    },
+    "weather_observed": {
+      "sade_zone_id": "zone-001",
+      "window_start": "2026-03-09T18:00:00Z",
+      "window_end": "2026-03-09T19:00:00Z",
+      "max_wind_m_s": 6.173333,
+      "max_gust_m_s": 7.716667,
+      "min_temp_f": 73.0,
+      "max_temp_f": 75.0,
+      "precipitation_summary": "none",
+      "visibility_min_m": 14816.0,
+      "source": "SADE WEATHER API",
+      "confidence": 1.0,
+      "generated_at": "2026-03-02T18:32:00Z"
+    },
+    "zone": {
+      "sade_zone_id": "zone-001",
+      "name": "Zone 001"
+    },
+    "time_in": "2024-10-15T10:00:00Z",
+    "time_out": "2024-10-15T10:45:00Z",
+    "flight": {
+      "max_alt_asl_m": 1500,
+      "distance_flown_mi": 1.8
+    },
+    "payload": {
+      "total_weight_kg": 2.5,
+      "camera": "01",
+      "other": "000"
+    },
+    "battery": {
+      "voltage_in": {
+        "A": 24.8,
+        "B": 24.6
+      },
+      "voltage_out": {
+        "A": 23.9,
+        "B": 24.0
+      },
+      "recharge_in_zone": false,
+      "types": "6S, 1.5Ah, Pack A"
+    },
+    "number_of_recharges": 0,
+    "incidents": [],
+    "entry_decision": "0100000000"
+  },
+  {
+    "evaluation_id": "c30a2c10-b234-4b8b-8057-1d2062745e22",
+    "evaluation_series_id": "f17f4eab-35e6-4d2a-a802-1e00e51ade3d",
+    "reputation_record_id": "rep-002",
+    "applicable_scopes": [
+      "PILOT",
+      "UAV"
+    ],
+    "pilot_id": "pilot-001",
+    "drone_id": "drone-001",
+    "telemetry": {
+      "altitude_min_m": 15.0,
+      "altitude_max_m": 112.0,
+      "battery_start_pct": 95.0,
+      "battery_end_pct": 54.0,
+      "battery_voltage_start_v": 16.4,
+      "battery_voltage_end_v": 14.7
+    },
+    "weather_observed": {
+      "sade_zone_id": "zone-002",
+      "window_start": "2026-04-02T14:30:00Z",
+      "window_end": "2026-04-02T15:20:00Z",
+      "max_wind_m_s": 3.601111,
+      "max_gust_m_s": 4.63,
+      "min_temp_f": 70.0,
+      "max_temp_f": 72.0,
+      "precipitation_summary": "none",
+      "visibility_min_m": 14816.0,
+      "source": "SADE WEATHER API",
+      "confidence": 0.93,
+      "generated_at": "2026-04-02T13:30:00Z"
+    },
+    "zone": {
+      "sade_zone_id": "zone-002",
+      "name": "Zone 002"
+    },
+    "time_in": "2024-11-08T14:30:00Z",
+    "time_out": "2024-11-08T15:20:00Z",
+    "flight": {
+      "max_alt_asl_m": 1800,
+      "distance_flown_mi": 2.5
+    },
+    "payload": {
+      "total_weight_kg": 5.2,
+      "camera": "11",
+      "other": "000"
+    },
+    "battery": {
+      "voltage_in": {
+        "A": 25.0,
+        "B": 24.9
+      },
+      "voltage_out": {
+        "A": 23.5,
+        "B": 23.6
+      },
+      "recharge_in_zone": false,
+      "types": "6S, 1.5Ah, Pack A"
+    },
+    "number_of_recharges": 0,
+    "incidents": [],
+    "entry_decision": "0100000000"
+  },
+  {
+    "evaluation_id": "af9f725c-777e-431a-8e27-0ba3172ac41f",
+    "evaluation_series_id": "f17f4eab-35e6-4d2a-a802-1e00e51ade3d",
+    "reputation_record_id": "rep-003",
+    "applicable_scopes": [
+      "PILOT",
+      "UAV"
+    ],
+    "pilot_id": "pilot-001",
+    "drone_id": "drone-001",
+    "telemetry": {
+      "altitude_min_m": 17.0,
+      "altitude_max_m": 154.0,
+      "battery_start_pct": 99.0,
+      "battery_end_pct": 57.0,
+      "battery_voltage_start_v": 16.4,
+      "battery_voltage_end_v": 14.3
+    },
+    "weather_observed": {
+      "sade_zone_id": "zone-004",
+      "window_start": "2026-06-12T18:00:00Z",
+      "window_end": "2026-06-12T18:50:00Z",
+      "max_wind_m_s": 1.543333,
+      "max_gust_m_s": 2.572222,
+      "min_temp_f": 73.0,
+      "max_temp_f": 75.0,
+      "precipitation_summary": "none",
+      "visibility_min_m": 11112.0,
+      "source": "SADE WEATHER API",
+      "confidence": 0.85,
+      "generated_at": "2026-06-12T16:00:00Z"
+    },
+    "zone": {
+      "sade_zone_id": "zone-004",
+      "name": "Zone 004"
+    },
+    "time_in": "2025-01-12T18:00:00Z",
+    "time_out": "2025-01-12T18:50:00Z",
+    "flight": {
+      "max_alt_asl_m": 2000,
+      "distance_flown_mi": 3.2
+    },
+    "payload": {
+      "total_weight_kg": 8.1,
+      "camera": "10",
+      "other": "000"
+    },
+    "battery": {
+      "voltage_in": {
+        "A": 25.1,
+        "B": 25.0
+      },
+      "voltage_out": {
+        "A": 23.2,
+        "B": 23.3
+      },
+      "recharge_in_zone": false,
+      "types": "6S, 1.5Ah, Pack A"
+    },
+    "number_of_recharges": 0,
+    "incidents": [],
+    "entry_decision": "0100000000"
+  },
+  {
+    "evaluation_id": "c3c1556a-929c-44b7-a123-4efbba95d0f2",
+    "evaluation_series_id": "f17f4eab-35e6-4d2a-a802-1e00e51ade3d",
+    "reputation_record_id": "rep-004",
+    "applicable_scopes": [
+      "PILOT",
+      "UAV"
+    ],
+    "pilot_id": "pilot-001",
+    "drone_id": "drone-001",
+    "telemetry": {
+      "altitude_min_m": 11.0,
+      "altitude_max_m": 122.0,
+      "battery_start_pct": 96.0,
+      "battery_end_pct": 46.0,
+      "battery_voltage_start_v": 16.3,
+      "battery_voltage_end_v": 14.2
+    },
+    "weather_observed": {
+      "sade_zone_id": "zone-005",
+      "window_start": "2026-07-20T09:00:00Z",
+      "window_end": "2026-07-20T09:40:00Z",
+      "max_wind_m_s": 3.601111,
+      "max_gust_m_s": 5.144444,
+      "min_temp_f": 68.0,
+      "max_temp_f": 70.0,
+      "precipitation_summary": "none",
+      "visibility_min_m": 9260.0,
+      "source": "SADE WEATHER API",
+      "confidence": 0.9,
+      "generated_at": "2026-07-20T08:20:00Z"
+    },
+    "zone": {
+      "sade_zone_id": "zone-005",
+      "name": "Zone 005"
+    },
+    "time_in": "2025-02-20T09:00:00Z",
+    "time_out": "2025-02-20T09:40:00Z",
+    "flight": {
+      "max_alt_asl_m": 1650,
+      "distance_flown_mi": 2.1
+    },
+    "payload": {
+      "total_weight_kg": 11.2,
+      "camera": "01",
+      "other": "000"
+    },
+    "battery": {
+      "voltage_in": {
+        "A": 24.9,
+        "B": 24.8
+      },
+      "voltage_out": {
+        "A": 23.8,
+        "B": 23.9
+      },
+      "recharge_in_zone": false,
+      "types": "6S, 1.5Ah, Pack A"
+    },
+    "number_of_recharges": 0,
+    "incidents": [],
+    "entry_decision": "1001000030"
+  },
+  {
+    "evaluation_id": "e73189cd-6d18-4144-bce1-efbc22962722",
+    "evaluation_series_id": "f17f4eab-35e6-4d2a-a802-1e00e51ade3d",
+    "reputation_record_id": "rep-005",
+    "applicable_scopes": [
+      "PILOT",
+      "UAV"
+    ],
+    "pilot_id": "pilot-001",
+    "drone_id": "drone-001",
+    "telemetry": {
+      "altitude_min_m": 9.5,
+      "altitude_max_m": 84.0,
+      "battery_start_pct": 89.0,
+      "battery_end_pct": 59.0,
+      "battery_voltage_start_v": 16.0,
+      "battery_voltage_end_v": 14.6
+    },
+    "weather_observed": {
+      "sade_zone_id": "zone-001",
+      "window_start": "2026-08-14T11:00:00Z",
+      "window_end": "2026-08-14T11:30:00Z",
+      "max_wind_m_s": 2.572222,
+      "max_gust_m_s": 4.115556,
+      "min_temp_f": 66.0,
+      "max_temp_f": 68.0,
+      "precipitation_summary": "none",
+      "visibility_min_m": 7408.0,
+      "source": "SADE WEATHER API",
+      "confidence": 0.95,
+      "generated_at": "2026-08-14T10:00:00Z"
+    },
+    "zone": {
+      "sade_zone_id": "zone-001",
+      "name": "Zone 001"
+    },
+    "time_in": "2025-03-14T11:00:00Z",
+    "time_out": "2025-03-14T11:30:00Z",
+    "flight": {
+      "max_alt_asl_m": 1400,
+      "distance_flown_mi": 1.5
+    },
+    "payload": {
+      "total_weight_kg": 0.5,
+      "camera": "01",
+      "other": "000"
+    },
+    "battery": {
+      "voltage_in": {
+        "A": 24.6,
+        "B": 24.4
+      },
+      "voltage_out": {
+        "A": 24.0,
+        "B": 24.1
+      },
+      "recharge_in_zone": false,
+      "types": "6S, 1.5Ah, Pack A"
+    },
+    "number_of_recharges": 0,
+    "incidents": [],
+    "entry_decision": "1000100008"
+  }
+]

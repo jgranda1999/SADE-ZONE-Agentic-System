@@ -1,13 +1,21 @@
 import asyncio
 import json
 import re
-import sys, os
+import sys
+import os
 from pathlib import Path
 from typing import Dict, Any, Iterable
-from resources import *
 
 from agents import Agent, Runner, trace, ModelSettings
-from evaluation_api_response import to_evaluation_api_payload
+
+from sade.evaluation_api_response import to_evaluation_api_payload
+from sade.models import (
+    ClaimsAgentOutput,
+    EnvironmentAgentOutput,
+    OrchestratorOutput,
+    ReputationAgentOutput,
+)
+from sade.paths import repo_root
 
 try:
     from openai import APIConnectionError, APITimeoutError, RateLimitError, APIStatusError
@@ -151,13 +159,10 @@ async def _run_orchestrator_with_transport_retry(
                 raise
             await asyncio.sleep(min(2 ** (attempt - 1), 8))
 
-from models import (
-    EnvironmentAgentOutput,
-    ReputationAgentOutput,
-    ActionRequiredAgentOutput,
-    ClaimsAgentOutput,
-    OrchestratorOutput,
-)
+
+_FIXTURE_ROOT = Path(__file__).resolve().parent / "resources" / "entry-requests-files"
+
+
 def load_prompt(prompt_file: str, prompts_dir: str = "prompts") -> str:
     """Load prompt text from a markdown file."""
     prompt_path = Path(__file__).parent / prompts_dir / prompt_file
@@ -379,35 +384,36 @@ async def main():
     """
     Example entry request processing.
     """
+    base = _FIXTURE_ROOT
     if "accept" in sys.argv:
-        entry_request_file = "resources/entry-requests/accept_entry_request.json"
-        attestation_claims_file = "resources/attestation-claims/accept_attestation_claims.json"
-        reputation_records_file = "resources/reputation-records/accept_reputation_records.json"
-        entry_request_history_file = "resources/entry-request-history/entry_request_history.json"
+        entry_request_file = base / "entry-requests" / "accept_entry_request.json"
+        attestation_claims_file = base / "attestation-claims" / "accept_attestation_claims.json"
+        reputation_records_file = base / "reputation-records" / "accept_reputation_records.json"
+        entry_request_history_file = base / "entry-request-history" / "entry_request_history.json"
         test_name = "accept"
     elif "accept_with_constraints" in sys.argv:
-        entry_request_file = "resources/entry-requests/accept_with_constraints_entry_request.json"
-        attestation_claims_file = "resources/attestation-claims/accept_with_constraints_attestation_claims.json"
-        reputation_records_file = "resources/reputation-records/accept_with_constraints_reputation_records.json"
-        entry_request_history_file = "resources/entry-request-history/entry_request_history.json"
+        entry_request_file = base / "entry-requests" / "accept_with_constraints_entry_request.json"
+        attestation_claims_file = base / "attestation-claims" / "accept_with_constraints_attestation_claims.json"
+        reputation_records_file = base / "reputation-records" / "accept_with_constraints_reputation_records.json"
+        entry_request_history_file = base / "entry-request-history" / "entry_request_history.json"
         test_name = "accept_with_constraints"
     elif "action_required" in sys.argv:
-        entry_request_file = "resources/entry-requests/action_required_entry_request.json"
-        attestation_claims_file = "resources/attestation-claims/action_required_attestation_claims.json"
-        reputation_records_file = "resources/reputation-records/action_required_reputation_records.json"
-        entry_request_history_file = "resources/entry-request-history/entry_request_history.json"
+        entry_request_file = base / "entry-requests" / "action_required_entry_request.json"
+        attestation_claims_file = base / "attestation-claims" / "action_required_attestation_claims.json"
+        reputation_records_file = base / "reputation-records" / "action_required_reputation_records.json"
+        entry_request_history_file = base / "entry-request-history" / "entry_request_history.json"
         test_name = "action_required"
     elif "deny" in sys.argv:
-        entry_request_file = "resources/entry-requests/deny_entry_request.json"
-        attestation_claims_file = "resources/attestation-claims/deny_attestation_claims.json"
-        reputation_records_file = "resources/reputation-records/deny_reputation_records.json"
-        entry_request_history_file = "resources/entry-request-history/entry_request_history.json"
+        entry_request_file = base / "entry-requests" / "deny_entry_request.json"
+        attestation_claims_file = base / "attestation-claims" / "deny_attestation_claims.json"
+        reputation_records_file = base / "reputation-records" / "deny_reputation_records.json"
+        entry_request_history_file = base / "entry-request-history" / "entry_request_history.json"
         test_name = "deny"
-    elif 'no_reputation_records' in sys.argv:
-        entry_request_file = "resources/entry-requests/no_reputation_records_entry_request.json"
-        attestation_claims_file = "resources/attestation-claims/no_reputation_records_attestation_claims.json"
-        reputation_records_file = "resources/reputation-records/no_reputation_records_reputation_records.json"
-        entry_request_history_file = "resources/entry-request-history/entry_request_history.json"
+    elif "no_reputation_records" in sys.argv:
+        entry_request_file = base / "entry-requests" / "no_reputation_records_entry_request.json"
+        attestation_claims_file = base / "attestation-claims" / "no_reputation_records_attestation_claims.json"
+        reputation_records_file = base / "reputation-records" / "no_reputation_records_reputation_records.json"
+        entry_request_history_file = base / "entry-request-history" / "entry_request_history.json"
         test_name = "no_reputation_records"
     else:
         raise ValueError("Invalid entry request file")
@@ -460,8 +466,10 @@ async def main():
         #
         # Recommended pattern: enumerate(example_request, start=1) in main()
 
-        output_filename = f"results/integration/entry_result_{test_name}.txt"
-        payload_filename = f"results/integration/entry_result_SADE_API_{test_name}.json"
+        integration_dir = repo_root() / "results" / "integration"
+        integration_dir.mkdir(parents=True, exist_ok=True)
+        output_filename = integration_dir / f"entry_result_{test_name}.txt"
+        payload_filename = integration_dir / f"entry_result_SADE_API_{test_name}.json"
         with open(payload_filename, "w") as f:
             json.dump(payload, f, indent=2)
         print(f"\nSADE API Response Payload written to {payload_filename}")
