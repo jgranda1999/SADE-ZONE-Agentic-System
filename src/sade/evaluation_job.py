@@ -27,11 +27,8 @@ _TRANSIENT_CALLBACK_STATUS = frozenset({429, 500, 502, 503, 504})
 _MAX_CALLBACK_ATTEMPTS = 5
 
 
-async def post_decision_result_with_retries(
-    payload: Dict[str, Any],
-    decision_result_url: Optional[str] = None,
-) -> None:
-    url = (decision_result_url or "").strip() or os.environ.get("DECISION_RESULT_URL")
+async def post_decision_result_with_retries(payload: Dict[str, Any]) -> None:
+    url = (os.environ.get("DECISION_RESULT_URL") or "").strip()
     if not url:
         logger.info("No decision result URL; payload: %s", payload)
         return
@@ -102,10 +99,8 @@ def persist_orchestrator_output_json(
     )
 
 
-async def run_evaluation_job(
-    entry_request: Dict[str, Any],
-    decision_result_url: Optional[str] = None,
-) -> None:
+async def run_evaluation_job(entry_request: Dict[str, Any]) -> None:
+    """POST completed payloads to ``DECISION_RESULT_URL`` (env) only."""
     evaluation_id = str(entry_request["evaluation_id"])
     evaluation_series_id = str(entry_request["evaluation_series_id"])
     output: Optional[Dict[str, Any]] = None
@@ -131,4 +126,4 @@ async def run_evaluation_job(
         )
 
     persist_orchestrator_output_json(evaluation_id, output)
-    await post_decision_result_with_retries(payload, decision_result_url)
+    await post_decision_result_with_retries(payload)

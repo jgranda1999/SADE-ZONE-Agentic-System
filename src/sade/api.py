@@ -1,8 +1,8 @@
 """
 Async HTTP ingest: POST /decision-request accepts a full entry request, returns 202 immediately,
 runs process_entry_request in the background (or enqueues to Redis Streams when ``REDIS_URL`` is set),
-POSTs the result to DECISION_RESULT_URL or an optional
-per-request ``decision_result_url`` (stripped from the body before orchestration).
+POSTs the result to ``DECISION_RESULT_URL`` only. Any ``decision_result_url`` in the
+body is stripped and ignored (clients must not rely on per-request callback URLs).
 
 HTTP semantics (summary):
 - **400** — malformed JSON, non-object body, or payload rejected by validation / business rules
@@ -21,7 +21,6 @@ import os
 import uuid
 from contextlib import asynccontextmanager
 from typing import Any, Dict, FrozenSet, Optional
-from urllib.parse import urlparse
 
 from fastapi import Body, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -175,24 +174,6 @@ def _acceptance_body(evaluation_id: str, evaluation_series_id: str) -> Dict[str,
     }
 
 
-def _normalize_decision_result_url(raw: object) -> Optional[str]:
-    if raw is None:
-        return None
-    if not isinstance(raw, str) or not raw.strip():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="decision_result_url must be a non-empty string when provided",
-        )
-    url = raw.strip()
-    parsed = urlparse(url)
-    if parsed.scheme not in ("http", "https"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="decision_result_url must use http or https",
-        )
-    return url
-
-
 @app.post("/decision-request")
 async def decision_request(
     request: Request,
@@ -205,17 +186,13 @@ async def decision_request(
     )
 
     body = dict(body)
-    decision_result_url = _normalize_decision_result_url(body.pop("decision_result_url", None))
+    body.pop("decision_result_url", None)
     body["evaluation_id"] = evaluation_id
     body["evaluation_series_id"] = evaluation_series_id
 
     redis_client = getattr(request.app.state, "redis", None)
     if redis_client is not None:
-        outcome = await enqueue_decision_request(
-            redis_client,
-            body,
-            decision_result_url,
-        )
+        outcome = await enqueue_decision_request(redis_client, body)
         if outcome == EnqueueOutcome.CONFLICT:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -261,7 +238,7 @@ async def decision_request(
             "evaluation_series_id": evaluation_series_id,
         }
 
-    asyncio.create_task(run_evaluation_job(body, decision_result_url))
+    asyncio.create_task(run_evaluation_job(body))
 
     return JSONResponse(
         status_code=status.HTTP_202_ACCEPTED,

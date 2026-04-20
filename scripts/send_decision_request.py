@@ -2,9 +2,15 @@
 """
 POST an entry request to the SADE ingest API (`sade.api:app`).
 
-Starts a small local HTTP server, adds ``decision_result_url`` to the payload,
-POSTs to ``/decision-request``, then blocks until the API POSTs the finished evaluation
-payload back to this process.
+The API ignores per-request callback URLs; it only POSTs completed evaluations to
+``DECISION_RESULT_URL``. For local end-to-end testing this script listens on a fixed
+localhost port (default ``SADE_CALLBACK_PORT`` or 8765) at ``CALLBACK_PATH``. Start
+**uvicorn** (and **decision_worker** if using Redis) with::
+
+    export DECISION_RESULT_URL=http://127.0.0.1:<port>/decision-result
+
+matching that port, then run this script so the listener is up before the worker
+finishes.
 
 Which JSON to send is chosen by passing one of the same argv tokens as before
 (e.g. ``accept_entry_request``, ``action_required_entry_request``, …).
@@ -34,6 +40,7 @@ import httpx
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_URL = os.environ.get("DECISION_REQUEST_URL", "http://127.0.0.1:8000/decision-request")
 CALLBACK_PATH = "/decision-result"
+CALLBACK_PORT = int(os.environ.get("SADE_CALLBACK_PORT", "8765"))
 WAIT_TIMEOUT = float(os.environ.get("SADE_CALLBACK_WAIT_TIMEOUT", "3600"))
 
 
@@ -119,16 +126,22 @@ def main() -> int:
 
     results: queue.Queue[dict[str, Any]] = queue.Queue(maxsize=1)
     handler_cls = _make_callback_handler(evaluation_id, CALLBACK_PATH, results)
-    httpd = ThreadingHTTPServer(("127.0.0.1", 0), handler_cls)
+    try:
+        httpd = ThreadingHTTPServer(("127.0.0.1", CALLBACK_PORT), handler_cls)
+    except OSError as exc:
+        print(
+            f"Could not bind callback server to 127.0.0.1:{CALLBACK_PORT} ({exc}). "
+            "Choose a free port with SADE_CALLBACK_PORT and set DECISION_RESULT_URL on the API/worker.",
+            file=sys.stderr,
+        )
+        return 1
     serve_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     serve_thread.start()
 
-    _, port = httpd.server_address[:2]
-    callback_url = f"http://127.0.0.1:{port}{CALLBACK_PATH}"
+    callback_url = f"http://127.0.0.1:{CALLBACK_PORT}{CALLBACK_PATH}"
 
     outbound = dict(payload)
     outbound["evaluation_id"] = evaluation_id
-    outbound["decision_result_url"] = callback_url
 
     headers: dict[str, str] = {"Content-Type": "application/json"}
     key = os.environ.get("SADE_INGEST_API_KEY", "").strip()
@@ -136,6 +149,11 @@ def main() -> int:
         headers["X-API-Key"] = key
 
     print(f"Callback server: {callback_url}")
+    print(
+        "Ensure API (and worker if using Redis) has "
+        f"DECISION_RESULT_URL={callback_url}",
+        file=sys.stderr,
+    )
     print("Waiting for decision after ingest acceptance…")
 
     def _shutdown_httpd() -> None:

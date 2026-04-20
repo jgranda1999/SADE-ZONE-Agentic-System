@@ -115,6 +115,28 @@ You can change models and `ModelSettings` in `src/sade/main.py` following the Op
 
 Orchestrator runs use `_run_orchestrator_with_transport_retry` in `src/sade/main.py`: **only transient** transport failures (timeouts, connection errors, HTTP 429 / 5xx where applicable) are retried, with short exponential backoff (capped). Contract and validation errors are **not** retried. If you hit sustained rate limits, reduce concurrency, increase backoff in code, or use an account tier with higher limits.
 
+## Docker
+
+**Image:** [`docker/Dockerfile`](docker/Dockerfile) — `python:3.12-slim`, installs the `sade` package; default command runs **`uvicorn sade.api:app`** on port **8000**. The **same image** runs the Redis consumer with `python -m sade.decision_worker`.
+
+**Build:**
+
+```bash
+docker build -f docker/Dockerfile -t sade-decision:latest .
+```
+
+**Local stack (API + worker + Redis)** — from the repo root:
+
+```bash
+cp .env.example .env
+# Set OPENAI_API_KEY, DECISION_RESULT_URL, and optional SADE_INGEST_* in .env
+docker compose up --build
+```
+
+Then **`POST http://localhost:8000/decision-request`**. Compose wires **`REDIS_URL=redis://redis:6379/0`** for `api` and `worker`; see [`.env.example`](.env.example) for other variables.
+
+**AWS / handoff:** See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) (one-pager) and [`docker/README.md`](docker/README.md) for image details, ECR, ECS task shape, secrets, and health checks.
+
 ## Usage
 
 ### Programmatic use
@@ -155,7 +177,7 @@ The `results/integration/` directory is created automatically when missing.
 
 ### Async HTTP ingest (`decision-request` / `decision-result`)
 
-The [`src/sade/api.py`](src/sade/api.py) FastAPI app accepts a **full** entry-request JSON (same merged shape as the CLI examples: include `evaluation_id`, `evaluation_series_id`, zone/pilot/UAV/weather, `attestation_claims`, `reputation_records`, etc.). Optional field **`decision_result_url`** (http/https): if present, the completed evaluation is `POST`ed there for that request only, and the field is removed before orchestration so it is not shown to the LLM. If omitted, `DECISION_RESULT_URL` is used when set.
+The [`src/sade/api.py`](src/sade/api.py) FastAPI app accepts a **full** entry-request JSON (same merged shape as the CLI examples: include `evaluation_id`, `evaluation_series_id`, zone/pilot/UAV/weather, `attestation_claims`, `reputation_records`, etc.). If clients send **`decision_result_url`**, it is **stripped and ignored**; completed evaluations are **`POST`ed only to `DECISION_RESULT_URL`** (set on the API/worker processes). Configure that env var to your platform receiver (for example `https://…/decision-result`).
 
 **Execution model**
 
@@ -211,7 +233,7 @@ uvicorn sade.api:app --host 0.0.0.0 --port 8000
 
 - **202 Accepted** — First time this `evaluation_id` is queued; body: `{"status":"ACCEPTED","evaluation_id","evaluation_series_id"}`.
 - **200 OK** — Idempotent retry with the same `evaluation_id` and `evaluation_series_id` (no second orchestration run).
-- **400** — Malformed JSON, invalid body shape (FastAPI validation), bad UUIDs, bad `decision_result_url`, or `evaluation_id` reused with a different `evaluation_series_id`.
+- **400** — Malformed JSON, invalid body shape (FastAPI validation), bad UUIDs, or `evaluation_id` reused with a different `evaluation_series_id`.
 - **401** — API key enforcement is enabled (`SADE_INGEST_API_KEY` / `SADE_INGEST_API_KEYS`) but the request is missing or invalid credentials.
 - **403** — The caller presented a key listed in `SADE_INGEST_REVOKED_KEYS`.
 - **404** — No handler for the request path (wrong URL or method-only routes elsewhere).
@@ -230,7 +252,7 @@ curl -sS -X POST "http://127.0.0.1:8000/decision-request" \
 
 **Python helper** ([`scripts/send_decision_request.py`](scripts/send_decision_request.py), defaults to API-oriented JSON under `src/sade/resources/entry-requests-api/` and `http://127.0.0.1:8000/decision-request`):
 
-- **Default:** starts a local callback HTTP server, sets `decision_result_url` on the payload, POSTs to ingest, then **waits** until the API POSTs the finished evaluation back (same machine; the API must reach the callback URL—typically `uvicorn` on `127.0.0.1` while the script listens on `127.0.0.1` with an ephemeral port).
+- **Default:** starts a local callback HTTP server on a fixed port (see `SADE_CALLBACK_PORT`, default 8765), POSTs to ingest (no per-request callback URL), then **waits** until the API POSTs the finished evaluation to **`DECISION_RESULT_URL`** (set that to `http://127.0.0.1:<port>/decision-result` on **uvicorn** and **decision_worker** before running the script).
 - **`--accept-only`:** print the 202/200 acceptance response only (no listener). Use `--repeat` with this to hit idempotency (202 then 200).
 
 Environment variable **`DECISION_REQUEST_URL`** overrides the ingest URL (same as `--url`).
@@ -283,8 +305,14 @@ agentic-sade-dev/
 │   ├── models.py
 │   ├── prompts/                   # Agent prompts (package data)
 │   └── resources/                 # Fixture JSON (package data): entry-requests-files/, entry-requests-api/
-├── docker/                        # Reserved for Dockerfiles / Compose (phase 2)
-├── docker-compose.yml             # Local Redis (append-only) for the queue
+├── docs/
+│   └── DEPLOYMENT.md              # Architect one-pager (AWS / image / env)
+├── docker/
+│   ├── Dockerfile                 # Production image (uvicorn default; worker = same image)
+│   └── README.md                  # Image build notes and ECS pointers
+├── docker-compose.yml             # Local: redis + api + worker
+├── .env.example                   # Template for Docker / deployment env (copy to .env)
+├── .dockerignore
 ├── scripts/
 │   ├── send_decision_request.py
 │   └── ingest_examples/
@@ -335,7 +363,7 @@ Constraints must be:
 - **Unit tests**: `python -m unittest discover -s tests` (requires `pip install -e .` or `pip install -r requirements.txt`). Some tests reference golden files under `results/integration/`; generate or refresh those with `python -m sade.main <scenario>` when contracts change.
 - **CLI integration**: Run `python -m sade.main accept` (and other scenarios) and inspect `results/integration/`.
 - **API integration (in-process)**: Run `uvicorn sade.api:app` without `REDIS_URL`, then `python scripts/send_decision_request.py` (or `curl` as above) and inspect the callback JSON and `results/api-integration/` when persistence is enabled.
-- **API + Redis**: Set `REDIS_URL`, run `docker compose up -d`, start `uvicorn sade.api:app` and `python -m sade.decision_worker`, then exercise ingest as above.
+- **API + Redis (Docker):** `cp .env.example .env`, set secrets, then `docker compose up --build` (see [Docker](#docker) and [`docker/README.md`](docker/README.md)).
 
 ## Contributing
 

@@ -87,7 +87,6 @@ async def ensure_consumer_group(
 async def enqueue_decision_request(
     redis: Any,
     entry_request: Dict[str, Any],
-    decision_result_url: Optional[str],
 ) -> EnqueueOutcome:
     """
     Enqueue a job or report duplicate / ``evaluation_series_id`` conflict.
@@ -108,7 +107,6 @@ async def enqueue_decision_request(
     ikey = idempotency_key(evaluation_id)
     ttl = idempotency_ttl_sec()
     payload = json.dumps(entry_request, separators=(",", ":"), ensure_ascii=False)
-    url = (decision_result_url or "").strip()
 
     ok = await redis.set(ikey, evaluation_series_id, nx=True, ex=ttl)
     if not ok:
@@ -127,10 +125,7 @@ async def enqueue_decision_request(
         return EnqueueOutcome.CONFLICT
 
     try:
-        msg_id = await redis.xadd(
-            sk,
-            {"payload": payload, "decision_result_url": url},
-        )
+        msg_id = await redis.xadd(sk, {"payload": payload})
     except Exception:
         await redis.delete(ikey)
         raise
@@ -150,10 +145,7 @@ async def enqueue_decision_request(
 async def process_one_batch(
     redis: Any,
     consumer_name: str,
-    run_job: Callable[
-        [Dict[str, Any], Optional[str]],
-        Awaitable[None],
-    ],
+    run_job: Callable[[Dict[str, Any]], Awaitable[None]],
     sk: Optional[str] = None,
     group: Optional[str] = None,
 ) -> bool:
@@ -185,14 +177,9 @@ async def process_one_batch(
         msg_id = msg_id.decode()
 
     raw_payload = fields.get("payload") or fields.get(b"payload")
-    raw_url = fields.get("decision_result_url") or fields.get(b"decision_result_url")
 
     if isinstance(raw_payload, bytes):
         raw_payload = raw_payload.decode("utf-8")
-    if isinstance(raw_url, bytes):
-        raw_url = raw_url.decode("utf-8")
-
-    decision_url: Optional[str] = (raw_url or "").strip() or None
 
     try:
         entry = json.loads(raw_payload)
@@ -204,7 +191,7 @@ async def process_one_batch(
     eid = entry.get("evaluation_id", msg_id)
     logger.info("Processing stream message %s evaluation_id=%s", msg_id, eid)
     try:
-        await run_job(entry, decision_url)
+        await run_job(entry)
     except Exception:
         logger.exception("Worker job failed for msg_id=%s evaluation_id=%s", msg_id, eid)
     finally:
@@ -216,10 +203,7 @@ async def process_one_batch(
 async def worker_loop(
     redis: Any,
     consumer_name: str,
-    run_job: Callable[
-        [Dict[str, Any], Optional[str]],
-        Awaitable[None],
-    ],
+    run_job: Callable[[Dict[str, Any]], Awaitable[None]],
     stop_event: Optional[asyncio.Event] = None,
 ) -> None:
     """Block until ``stop_event`` is set (if given) or forever: one job at a time."""

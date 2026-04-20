@@ -1,6 +1,10 @@
-# Local Redis for decision queue (API + decision_worker).
-# Usage: docker compose up -d
-# Then: export REDIS_URL=redis://127.0.0.1:6379/0
+# Local / integration stack: Redis queue + API + worker.
+#
+#   cp .env.example .env   # set OPENAI_API_KEY, DECISION_RESULT_URL, etc.
+#   docker compose up --build
+#
+# Ingest: POST http://localhost:8000/decision-request
+# AWS: use the same image; set command + env in ECS task definitions (see docker/README.md).
 
 services:
   redis:
@@ -10,6 +14,40 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    env_file:
+      - .env
+    command: >
+      uvicorn sade.api:app --host 0.0.0.0 --port 8000
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    env_file:
+      - .env
+    command: python -m sade.decision_worker
+    depends_on:
+      redis:
+        condition: service_healthy
 
 volumes:
   redis-data:
