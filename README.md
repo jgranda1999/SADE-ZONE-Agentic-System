@@ -256,6 +256,7 @@ agentic-sade-dev/
 │   ├── integration/             # main.py CLI: entry_result_<scenario>.txt / SADE_API JSON
 │   └── api-integration/          # api.py: entry_result_<evaluation_id>.json when enabled
 ├── requirements.txt
+├── requirements-dev.txt           # Optional: dev/test extras (e.g. fakeredis)
 └── README.md
 ```
 
@@ -292,6 +293,7 @@ Constraints must be:
 
 ## Testing
 
+- **Install dev test deps** (includes `fakeredis` for `tests/test_queue_redis.py`): `pip install -r requirements-dev.txt`
 - **Unit tests**: `tests/test_evaluation_api_response.py` (payload mapping and helpers). Some tests reference golden files under `results/integration/`; generate or refresh those with `python main.py <scenario>` when contracts change.
 - **CLI integration**: Run `python main.py accept` (and other scenarios) and inspect `results/integration/`.
 - **API integration**: Run `uvicorn api:app`, then `python scripts/send_decision_request.py` (or `curl` as above) and inspect the callback JSON and `results/api-integration/` when persistence is enabled.

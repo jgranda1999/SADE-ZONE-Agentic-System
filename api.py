@@ -1,6 +1,7 @@
 """
 Async HTTP ingest: POST /decision-request accepts a full entry request, returns 202 immediately,
-runs process_entry_request in the background, POSTs the result to DECISION_RESULT_URL or an optional
+runs process_entry_request in the background (or enqueues to Redis Streams when ``REDIS_URL`` is set),
+POSTs the result to DECISION_RESULT_URL or an optional
 per-request ``decision_result_url`` (stripped from the body before orchestration).
 
 HTTP semantics (summary):
@@ -15,39 +16,46 @@ HTTP semantics (summary):
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import os
 import uuid
-from pathlib import Path
+from contextlib import asynccontextmanager
 from typing import Any, Dict, FrozenSet, Optional
 from urllib.parse import urlparse
 
-import httpx
 from fastapi import Body, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from evaluation_api_response import (
-    build_processing_failed_response,
-    to_evaluation_api_payload,
-)
-from main import process_entry_request
+from evaluation_job import run_evaluation_job
+from queue_redis import EnqueueOutcome, enqueue_decision_request
 
 logger = logging.getLogger(__name__)
 
-_REPO_ROOT = Path(__file__).resolve().parent
-
-app = FastAPI(title="SADE Decision Ingest", version="0.1.0")
-
-_TRANSIENT_CALLBACK_STATUS = frozenset({429, 500, 502, 503, 504})
-_MAX_CALLBACK_ATTEMPTS = 5
-
-# evaluation_id -> canonical acceptance metadata (idempotency; single-process only)
+# In-memory idempotency when ``REDIS_URL`` is not set (single-process only)
 _jobs_lock = asyncio.Lock()
 _jobs: Dict[str, Dict[str, str]] = {}
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    redis_url = (os.environ.get("REDIS_URL") or "").strip()
+    if redis_url:
+        import redis.asyncio as redis_mod
+
+        client = redis_mod.from_url(redis_url, decode_responses=True)
+        app.state.redis = client
+        logger.info("Redis connected for decision queue (%s)", redis_mod.__name__)
+        yield
+        await client.aclose()
+        logger.info("Redis connection closed")
+    else:
+        yield
+
+
+app = FastAPI(title="SADE Decision Ingest", version="0.1.0", lifespan=_lifespan)
 
 
 def _load_allowed_api_keys() -> Optional[FrozenSet[str]]:
@@ -185,115 +193,9 @@ def _normalize_decision_result_url(raw: object) -> Optional[str]:
     return url
 
 
-async def _post_decision_result_with_retries(
-    payload: Dict[str, Any],
-    decision_result_url: Optional[str] = None,
-) -> None:
-    url = (decision_result_url or "").strip() or os.environ.get("DECISION_RESULT_URL")
-    if not url:
-        logger.info("No decision result URL; payload: %s", payload)
-        return
-
-    async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=30.0)) as client:
-        for attempt in range(1, _MAX_CALLBACK_ATTEMPTS + 1):
-            try:
-                resp = await client.post(url, json=payload)
-                if resp.status_code in _TRANSIENT_CALLBACK_STATUS:
-                    logger.warning(
-                        "Callback attempt %s/%s transient HTTP %s",
-                        attempt,
-                        _MAX_CALLBACK_ATTEMPTS,
-                        resp.status_code,
-                    )
-                elif resp.is_success:
-                    return
-                else:
-                    logger.error(
-                        "Callback non-retryable failure: HTTP %s — %s",
-                        resp.status_code,
-                        (resp.text or "")[:500],
-                    )
-                    return
-            except httpx.RequestError as exc:
-                logger.warning(
-                    "Callback attempt %s/%s transport error: %s",
-                    attempt,
-                    _MAX_CALLBACK_ATTEMPTS,
-                    exc,
-                )
-
-            if attempt < _MAX_CALLBACK_ATTEMPTS:
-                await asyncio.sleep(min(2 ** (attempt - 1), 8))
-
-    logger.error(
-        "Callback exhausted retries for evaluation_id=%s",
-        payload.get("evaluation_id"),
-    )
-
-
-def _persist_orchestrator_output_json(
-    evaluation_id: str,
-    output: Optional[Dict[str, Any]],
-) -> None:
-    """Write orchestrator contract JSON: ``{"decision": ..., "visibility": ...}`` (same shape as in CLI ``entry_result_*.txt``)."""
-    flag = os.environ.get("SADE_PERSIST_RESULTS", "1").strip().lower()
-    if flag in ("0", "false", "no"):
-        return
-    if output is None:
-        logger.info(
-            "No orchestrator output to persist for evaluation_id=%s (processing failed before final JSON)",
-            evaluation_id,
-        )
-        return
-
-    out_dir = _REPO_ROOT / "results" / "api-integration"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    json_path = out_dir / f"entry_result_{evaluation_id}.json"
-
-    with json_path.open("w", encoding="utf-8") as f:
-        json.dump(output, f, indent=2)
-
-    logger.info(
-        "Wrote orchestrator output %s for evaluation_id=%s",
-        json_path.name,
-        evaluation_id,
-    )
-
-
-async def _run_evaluation_job(
-    entry_request: Dict[str, Any],
-    decision_result_url: Optional[str] = None,
-) -> None:
-    evaluation_id = str(entry_request["evaluation_id"])
-    evaluation_series_id = str(entry_request["evaluation_series_id"])
-    output: Optional[Dict[str, Any]] = None
-    try:
-        output = await process_entry_request(entry_request)
-        payload = to_evaluation_api_payload(
-            output,
-            evaluation_id,
-            evaluation_series_id,
-        )
-    except ValueError as exc:
-        payload = build_processing_failed_response(
-            evaluation_id,
-            evaluation_series_id,
-            reason=str(exc)[:500],
-        )
-    except Exception as exc:  # noqa: BLE001 — last-resort processing_failed for unexpected errors
-        logger.exception("Orchestration failed for evaluation_id=%s", evaluation_id)
-        payload = build_processing_failed_response(
-            evaluation_id,
-            evaluation_series_id,
-            reason=str(exc)[:500],
-        )
-
-    _persist_orchestrator_output_json(evaluation_id, output)
-    await _post_decision_result_with_retries(payload, decision_result_url)
-
-
 @app.post("/decision-request")
 async def decision_request(
+    request: Request,
     body: Dict[str, object] = Body(...),
 ) -> JSONResponse:
     evaluation_id = _require_uuid(body.get("evaluation_id"), "evaluation_id")
@@ -301,6 +203,43 @@ async def decision_request(
         body.get("evaluation_series_id"),
         "evaluation_series_id",
     )
+
+    body = dict(body)
+    decision_result_url = _normalize_decision_result_url(body.pop("decision_result_url", None))
+    body["evaluation_id"] = evaluation_id
+    body["evaluation_series_id"] = evaluation_series_id
+
+    redis_client = getattr(request.app.state, "redis", None)
+    if redis_client is not None:
+        outcome = await enqueue_decision_request(
+            redis_client,
+            body,
+            decision_result_url,
+        )
+        if outcome == EnqueueOutcome.CONFLICT:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    "evaluation_id already accepted with a different evaluation_series_id"
+                ),
+            )
+        if outcome == EnqueueOutcome.DUPLICATE:
+            logger.info(
+                "Idempotent replay evaluation_id=%s (Redis key exists; no new stream message)",
+                evaluation_id,
+            )
+            return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content=_acceptance_body(evaluation_id, evaluation_series_id),
+            )
+        logger.info(
+            "Accepted new evaluation_id=%s (enqueued to Redis stream)",
+            evaluation_id,
+        )
+        return JSONResponse(
+            status_code=status.HTTP_202_ACCEPTED,
+            content=_acceptance_body(evaluation_id, evaluation_series_id),
+        )
 
     async with _jobs_lock:
         existing = _jobs.get(evaluation_id)
@@ -322,12 +261,7 @@ async def decision_request(
             "evaluation_series_id": evaluation_series_id,
         }
 
-    body = dict(body)
-    decision_result_url = _normalize_decision_result_url(body.pop("decision_result_url", None))
-    body["evaluation_id"] = evaluation_id
-    body["evaluation_series_id"] = evaluation_series_id
-
-    asyncio.create_task(_run_evaluation_job(body, decision_result_url))
+    asyncio.create_task(run_evaluation_job(body, decision_result_url))
 
     return JSONResponse(
         status_code=status.HTTP_202_ACCEPTED,

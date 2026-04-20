@@ -39,23 +39,65 @@ def _claims_call_required(decision: Dict[str, Any]) -> bool:
     return True
 
 
+def _extract_fenced_json_text(text: str) -> str | None:
+    """Return inner text of a ``` or ```json fenced block, or None."""
+    m = re.search(r"```(?:json)?\s*\n?", text)
+    if not m:
+        return None
+    start = m.end()
+    end = text.find("```", start)
+    if end == -1:
+        return None
+    return text[start:end].strip()
+
+
 def _extract_json_object(raw: str) -> Dict[str, Any]:
-    """Extract first JSON object from raw text or fenced block."""
+    """
+    Extract the first top-level JSON object from raw text.
+
+    Tries, in order: full-string parse, fenced ```json``` inner text, then
+    :meth:`json.JSONDecoder.raw_decode` from each ``{`` so nested braces inside
+    strings/objects are handled (avoids broken non-greedy ``.*?`` truncation).
+    """
     text = (raw or "").strip()
-    try:
-        parsed = json.loads(text)
-        if isinstance(parsed, dict):
-            return parsed
-    except json.JSONDecodeError:
-        pass
-    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
-    if not match:
+    if not text:
         return {}
-    try:
-        parsed = json.loads(match.group(1).strip())
-        return parsed if isinstance(parsed, dict) else {}
-    except json.JSONDecodeError:
-        return {}
+
+    def _try_dict_parse(candidate: str) -> Dict[str, Any] | None:
+        candidate = candidate.strip()
+        if not candidate:
+            return None
+        try:
+            parsed = json.loads(candidate)
+            return parsed if isinstance(parsed, dict) else None
+        except json.JSONDecodeError:
+            return None
+
+    got = _try_dict_parse(text)
+    if got is not None:
+        return got
+
+    fenced = _extract_fenced_json_text(text)
+    if fenced:
+        got = _try_dict_parse(fenced)
+        if got is not None:
+            return got
+        text = fenced
+
+    decoder = json.JSONDecoder()
+    i = 0
+    while i < len(text):
+        if text[i] != "{":
+            i += 1
+            continue
+        try:
+            obj, _end = decoder.raw_decode(text, i)
+            if isinstance(obj, dict):
+                return obj
+        except json.JSONDecodeError:
+            pass
+        i += 1
+    return {}
 
 
 def _claims_spec_present(claims: Dict[str, Any]) -> bool:

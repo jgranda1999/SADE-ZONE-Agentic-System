@@ -8,6 +8,12 @@ payload back to this process.
 
 Which JSON to send is chosen by passing one of the same argv tokens as before
 (e.g. ``accept_entry_request``, ``action_required_entry_request``, …).
+
+With Redis-backed ingest, idempotency keys persist in Redis (see ``SADE_IDEMPOTENCY_TTL_SEC``).
+Reusing the same ``evaluation_id`` from a fixture always yields HTTP **200** after the first
+successful **202**. For local testing of a **new** enqueue, pass ``--fresh`` to replace
+``evaluation_id`` and ``evaluation_series_id`` with new UUIDs, or clear Redis keys / use
+``redis-cli FLUSHDB`` on a dev instance.
 """
 
 from __future__ import annotations
@@ -70,23 +76,36 @@ def _make_callback_handler(
 
 
 def main() -> int:
-    if "new_user_no_att_rr_erh" in sys.argv:
+    argv = [a for a in sys.argv[1:] if a != "--fresh"]
+    fresh = "--fresh" in sys.argv[1:] or os.environ.get(
+        "SADE_FRESH_EVALUATION_IDS", ""
+    ).strip().lower() in ("1", "true", "yes")
+
+    if "new_user_no_att_rr_erh" in argv:
         default_file = REPO_ROOT / "resources/entry-requests-api/action_required_entry_request_no_att_rr_erh.json"
-    elif "new_user" in sys.argv:
+    elif "new_user" in argv:
         default_file = REPO_ROOT / "resources/entry-requests-api/accept_entry_request_no_rr_erh.json"
-    elif "accept_entry_request" in sys.argv:
+    elif "accept_entry_request" in argv:
         default_file = REPO_ROOT / "resources/entry-requests-api/accept_entry_request.json"
-    elif "accept_entry_request_with_constraints" in sys.argv:
+    elif "accept_entry_request_with_constraints" in argv:
         default_file = REPO_ROOT / "resources/entry-requests-api/accept_with_contraints_entry_request.json"
-    elif "action_required_entry_request" in sys.argv:
+    elif "action_required_entry_request" in argv:
         default_file = REPO_ROOT / "resources/entry-requests-api/action_required_entry_request.json"
-    elif "deny_entry_request" in sys.argv:
+    elif "deny_entry_request" in argv:
         default_file = REPO_ROOT / "resources/entry-requests-api/deny_entry_request.json"
     else:
         raise ValueError("Invalid entry request file")
 
     with default_file.open("r", encoding="utf-8") as f:
         payload = json.load(f)
+
+    if fresh:
+        payload["evaluation_id"] = str(uuid.uuid4())
+        payload["evaluation_series_id"] = str(uuid.uuid4())
+        print(
+            "Fresh evaluation_id / evaluation_series_id (new Redis idempotency keys)",
+            file=sys.stderr,
+        )
 
     raw_eid = payload.get("evaluation_id")
     if raw_eid is None:
