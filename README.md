@@ -98,7 +98,7 @@ cd agentic-sade-dev
 pip install -r requirements.txt
 ```
 
-Note: The project uses the **OpenAI Agents SDK** (`openai-agents`), which provides the `agents` module (`Agent`, `Runner`, `trace`). The HTTP layer uses **FastAPI**, **Uvicorn**, and **httpx** (see `requirements.txt`).
+Note: The project uses the **OpenAI Agents SDK** (`openai-agents`), which provides the `agents` module (`Agent`, `Runner`, `trace`). The HTTP layer uses **FastAPI**, **Uvicorn**, and **httpx**; **`redis`** is installed for optional `REDIS_URL` queue mode (see `requirements.txt`). No Redis server is required unless you enable that mode.
 
 ### API Configuration
 
@@ -154,7 +154,33 @@ Create `results/integration/` if it does not exist, or adjust paths in `main()` 
 
 The [`api.py`](api.py) FastAPI app accepts a **full** entry-request JSON (same merged shape as the CLI examples: include `evaluation_id`, `evaluation_series_id`, zone/pilot/UAV/weather, `attestation_claims`, `reputation_records`, etc.). Optional field **`decision_result_url`** (http/https): if present, the completed evaluation is `POST`ed there for that request only, and the field is removed before orchestration so it is not shown to the LLM. If omitted, `DECISION_RESULT_URL` is used when set.
 
-**Run locally:**
+**Execution model**
+
+- **No `REDIS_URL`**: After accepting a request, the API schedules [`run_evaluation_job`](evaluation_job.py) in-process (`asyncio.create_task`). Idempotency for duplicate `evaluation_id` values is tracked **in memory** in that process only.
+- **`REDIS_URL` set**: The API enqueues work to a **Redis Stream** ([`queue_redis.py`](queue_redis.py)) and returns **202** immediately. A separate process must run [`decision_worker.py`](decision_worker.py), which consumes the stream and calls `run_evaluation_job`. Idempotency keys live in Redis, so duplicate submits are deduplicated **across** API replicas that share the same Redis.
+
+Evaluation work (orchestration, optional persistence under `results/api-integration/`, callback retries) is implemented once in [`evaluation_job.py`](evaluation_job.py).
+
+**Redis (optional, recommended for production-style setups)**
+
+Start a local Redis (see [`docker-compose.yml`](docker-compose.yml)):
+
+```bash
+docker compose up -d
+export REDIS_URL=redis://127.0.0.1:6379/0
+```
+
+Then run the API and worker in separate terminals:
+
+```bash
+# Terminal A — ingest only
+uvicorn api:app --host 0.0.0.0 --port 8000
+
+# Terminal B — consumer (required when REDIS_URL is set)
+python decision_worker.py
+```
+
+**Run locally (in-process queue, no Redis):**
 
 ```bash
 pip install -r requirements.txt
@@ -165,6 +191,13 @@ uvicorn api:app --host 0.0.0.0 --port 8000
 
 | Variable | Purpose |
 |----------|---------|
+| `REDIS_URL` | If set (e.g. `redis://127.0.0.1:6379/0`), enqueue decision work to Redis Streams and require a [`decision_worker.py`](decision_worker.py) consumer. If unset, evaluations run in the API process as background tasks. |
+| `SADE_STREAM_KEY` | Redis stream name (default `sade:decisions`). |
+| `SADE_CONSUMER_GROUP` | Redis consumer group for `XREADGROUP` (default `sade-workers`). |
+| `SADE_IDEMPOTENCY_PREFIX` | Prefix for Redis keys that gate idempotent enqueue (default `sade:ingest`). |
+| `SADE_IDEMPOTENCY_TTL_SEC` | TTL for idempotency keys in seconds (default 30 days; minimum 60 when overridden). |
+| `SADE_STREAM_BLOCK_MS` | Worker blocking read timeout in ms (default 5000; minimum 1000 when overridden). |
+| `SADE_CONSUMER_NAME` | Worker consumer name; default includes hostname and PID. |
 | `DECISION_RESULT_URL` | Full URL for outbound `POST` of the completed evaluation payload (`to_evaluation_api_payload` or `build_processing_failed_response`). If unset, the result is only logged at INFO (useful for local runs without a receiver). Failed callbacks are retried with exponential backoff (up to 5 attempts) for transient HTTP statuses (429, 5xx) and transport errors. |
 | `SADE_PERSIST_RESULTS` | If `0` / `false` / `no`, skip writing orchestrator JSON under `results/api-integration/`. Default: write `entry_result_{evaluation_id}.json` (`decision` + `visibility`, same contract as the CLI body). Nothing is written if processing fails before a final orchestrator JSON exists. |
 | `SADE_INGEST_API_KEY` | Single allowed API key. If set (non-empty), `POST /decision-request` requires `X-API-Key: <key>` or `Authorization: Bearer <key>`. |
@@ -182,7 +215,7 @@ uvicorn api:app --host 0.0.0.0 --port 8000
 
 When no API keys are configured, authentication is **not** enforced by the app (use network controls or a gateway for production).
 
-**Idempotency** is in-memory and **single-process** only (multiple Uvicorn workers or containers do not share deduplication state).
+**Idempotency**: Without `REDIS_URL`, deduplication is **in-memory and single-process** only (multiple Uvicorn workers or containers do not share state). With `REDIS_URL`, the same `evaluation_id` maps to a Redis key before `XADD`, so duplicate submits return **200** without a new stream message and work is not duplicated across API instances that share that Redis.
 
 **Example:**
 
@@ -234,7 +267,11 @@ The orchestrator runs in a single pass (no outer loop) and must emit a final dec
 ```
 agentic-sade-dev/
 ├── main.py                        # Orchestrator + sub-agents; CLI scenario driver
-├── api.py                         # FastAPI ingest (POST /decision-request); background eval; callback + persist
+├── api.py                         # FastAPI ingest (POST /decision-request); enqueue or in-process job
+├── evaluation_job.py              # run_evaluation_job: orchestration, persist, callback retries
+├── queue_redis.py                 # Redis Streams enqueue + worker read/ack loop
+├── decision_worker.py             # Standalone consumer for the Redis decision queue
+├── docker-compose.yml             # Local Redis (append-only) for the queue
 ├── evaluation_api_response.py     # Maps orchestrator JSON ↔ evaluation API payload
 ├── models.py                      # Pydantic models for agent outputs and evidence grammar
 ├── prompts/                       # Current agent prompts (loaded by main.py)
@@ -255,8 +292,8 @@ agentic-sade-dev/
 ├── results/                       # Generated outputs (gitignored as needed)
 │   ├── integration/             # main.py CLI: entry_result_<scenario>.txt / SADE_API JSON
 │   └── api-integration/          # api.py: entry_result_<evaluation_id>.json when enabled
-├── requirements.txt
-├── requirements-dev.txt           # Optional: dev/test extras (e.g. fakeredis)
+├── requirements.txt               # Includes redis async client for optional queue mode
+├── requirements-dev.txt           # Optional: dev/test extras (e.g. fakeredis for Redis tests)
 └── README.md
 ```
 
@@ -293,10 +330,11 @@ Constraints must be:
 
 ## Testing
 
-- **Install dev test deps** (includes `fakeredis` for `tests/test_queue_redis.py`): `pip install -r requirements-dev.txt`
-- **Unit tests**: `tests/test_evaluation_api_response.py` (payload mapping and helpers). Some tests reference golden files under `results/integration/`; generate or refresh those with `python main.py <scenario>` when contracts change.
+- **Optional dev deps** (`fakeredis`, etc.): `pip install -r requirements-dev.txt`
+- **Unit tests**: `python -m unittest discover -s tests` (payload mapping and helpers in `tests/test_evaluation_api_response.py`). Some tests reference golden files under `results/integration/`; generate or refresh those with `python main.py <scenario>` when contracts change.
 - **CLI integration**: Run `python main.py accept` (and other scenarios) and inspect `results/integration/`.
-- **API integration**: Run `uvicorn api:app`, then `python scripts/send_decision_request.py` (or `curl` as above) and inspect the callback JSON and `results/api-integration/` when persistence is enabled.
+- **API integration (in-process)**: Run `uvicorn api:app` without `REDIS_URL`, then `python scripts/send_decision_request.py` (or `curl` as above) and inspect the callback JSON and `results/api-integration/` when persistence is enabled.
+- **API + Redis**: Set `REDIS_URL`, run `docker compose up -d`, start `uvicorn` and `python decision_worker.py`, then exercise ingest as above.
 
 ## Contributing
 
